@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abertura de Conta</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+	rel="stylesheet">
+</head>
+<body>
+	<div class="container">
+		<h1>Abertura de Conta</h1>
+		<form onsubmit="event.preventDefault(); pesquisarCliente(); ">
+			<!-- Formulário de Pesquisa por CPF -->
+			<div class="form-group">
+				<label for="cpf">Digite o CPF do cliente</label> <input type="text"
+					class="form-control" id="cpf" placeholder="CPF">
+				<button type="button" class="btn btn-primary"
+					onclick="pesquisarCliente()">Pesquisar</button>
+			</div>
+
+			<div id="clienteInfo" style="display: none;">
+				<h3>Cliente Encontrado</h3>
+				<p>
+					<strong>Nome:</strong> <span id="clienteNome"></span>
+				</p>
+				<p>
+					<strong>CPF:</strong> <span id="clienteCpf"></span>
+				</p>
+
+				<!-- Seleção de tipo de conta -->
+				<div class="form-group">
+					<label for="tipoConta">Tipo de Conta</label> <select
+						class="form-control" id="tipoConta">
+						<option value="CORRENTE">Conta Corrente</option>
+						<option value="POUPANCA">Conta Poupança</option>
+					</select>
+				</div>
+
+				<button type="button" class="btn btn-success" onclick="criarConta()">Criar
+					Conta</button>
+			</div>
+
+			<div id="resultadoConta" style="display: none;">
+				<h3>Conta Criada</h3>
+				<p>
+					<strong>Número da Conta:</strong> <span id="numeroConta"></span>
+				</p>
+				<p>
+					<strong>Tipo de Conta:</strong> <span id="tipoContaCriada"></span>
+				</p>
+			</div>
+
+			<button type="button" class="btn btn-secondary"
+				onclick="window.history.back()">Voltar</button>
+
+		</form>
+	</div>
+	<script>
+       
+        function pesquisarCliente() {
+            const cpf = document.getElementById('cpf').value;
+		
+            fetch(`http://localhost:8080/cliente/buscarCpf/${cpf}`)
+                .then(response => response.json())
+                .then(data => {
+                	console.log(data)
+                    if (data) {
+                        document.getElementById('clienteNome').textContent = data.nome;
+                        document.getElementById('clienteCpf').textContent = data.cpf;
+                        document.getElementById('clienteInfo').style.display = 'block';
+                    } else {
+                        alert("Cliente não encontrado.");
+                    }
+                })
+                .catch(error => alert("Erro ao buscar cliente."));
+        }
+
+        // Função para criar conta
+       function criarConta() {
+	    const tipoConta = document.getElementById('tipoConta').value; // "CORRENTE" ou "POUPANCA"
+	    const cpf = document.getElementById('cpf').value;
+	    const agencia = 1234;
+	
+	    fetch(`http://localhost:8080/conta/criarConta?cpf=${cpf}&agencia=${agencia}&tipoConta=${tipoConta}`, {
+	        method: 'POST'
+	    })
+	    .then(response => response.json())
+	    .then(data => {
+	        if (data) {
+	            document.getElementById('numeroConta').textContent = data.numConta;
+	            document.getElementById('tipoContaCriada').textContent = tipoConta === 'CORRENTE' ? 'Conta Corrente' : 'Conta Poupança';
+	            document.getElementById('resultadoConta').style.display = 'block';
+	            console.log(data);
+	        } else {
+	            alert("Erro ao criar conta.");
+	        }
+	    })
+	    .catch(error => alert("Erro ao criar conta."));
+	}
+    </script>
+</body>
+</html>

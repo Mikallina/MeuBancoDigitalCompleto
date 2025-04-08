@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consulta de Clientes</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+	rel="stylesheet"
+	integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+	crossorigin="anonymous">
+</head>
+
+<body>
+	<div class="container mt-4">
+		<h2>Consulta de Clientes</h2>
+
+		<!-- Formulário para consulta de cliente pelo CPF -->
+		<div class="form-row">
+			<div class="form-group col-md-6">
+				<label for="inputCpf">Consultar Cliente pelo CPF</label> <input
+					type="text" class="form-control" id="cpf"
+					placeholder="Digite o CPF">
+			</div>
+			<div class="form-group col-md-2 d-flex align-items-end">
+				<button type="button" class="btn btn-primary"
+					onclick="consultarCliente()">Buscar</button>
+			</div>
+		</div>
+
+		<hr>
+
+		<!-- Lista de clientes cadastrados -->
+		<h4>Clientes Cadastrados</h4>
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th scope="col">Nome</th>
+					<th scope="col">CPF</th>
+					<th scope="col">Data de Nascimento</th>
+					<th scope="col">Ações</th>
+				</tr>
+			</thead>
+			<tbody id="clientesList">
+				<!-- Dados dos clientes serão inseridos aqui via JavaScript -->
+			</tbody>
+		</table>
+
+	</div>
+
+	<script>
+        // Função para consultar cliente por CPF
+        function consultarCliente() {
+    const cpf = document.getElementById('cpf').value;
+    if (cpf) {
+        fetch(`http://localhost:8080/cliente/buscarCpf/${cpf}`)
+            .then(response => response.json())
+            .then(data => {
+                var clientesList = document.getElementById('clientesList');
+                clientesList.innerHTML = ''; // Limpa a lista de clientes antes de adicionar o resultado
+                
+                if (data) {
+                    alert("Cliente encontrado!");
+                    var row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${data.nome}</td>
+                        <td>${data.cpf}</td>
+                        <td>${data.dataNascimento}</td>
+                        <td>
+                            <button class="btn btn-warning" onclick="editarCliente(${data.id})">Editar</button>
+                            <button class="btn btn-danger" onclick="deletarCliente(${data.id})">Deletar</button>
+                        </td>
+                    `;
+                    clientesList.appendChild(row);
+                    
+                    // Adiciona um botão para voltar à lista completa
+                    var voltarButton = document.createElement('button');
+                    voltarButton.className = 'btn btn-secondary mt-3';
+                    voltarButton.innerText = 'Voltar à lista completa';
+                    voltarButton.onclick = function () {
+                        listarClientes(); // Recarrega a lista completa
+                    };
+                    clientesList.appendChild(voltarButton);
+                } else {
+                    alert("Cliente não encontrado!");
+                }
+            })
+            .catch(error => {
+                console.error("Erro ao buscar cliente:", error);
+                alert("Erro ao consultar o cliente.");
+            });
+    } else {
+        alert("Por favor, digite um CPF para buscar.");
+    }
+}
+
+
+        // Função para listar todos os clientes cadastrados
+      function listarClientes() {
+    fetch('http://localhost:8080/cliente/listAllCliente') 
+        .then(response => response.json())
+        .then(data => {
+            var clientesList = document.getElementById('clientesList');
+            clientesList.innerHTML = '';
+            
+            data.forEach(cliente => {
+                var row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${cliente.nome}</td>
+                    <td>${cliente.cpf}</td>
+                    <td>${cliente.dataNascimento}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editarCliente(${cliente.id})">Editar</button>
+                        <button class="btn btn-danger" onclick="deletarCliente(${cliente.id})">Deletar</button>
+                    </td>
+                `;
+                clientesList.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error("Erro ao listar clientes:", error);
+            alert("Erro ao listar clientes.");
+        });
+}
+      window.onload = function() {
+    	    // Recupera os dados do cliente do localStorage
+    	    const cliente = JSON.parse(localStorage.getItem("clienteParaEditar"));
+
+    	    if (cliente) {
+    	        // Preencher os campos do formulário com os dados do cliente
+    	        document.getElementById("nome").value = cliente.nome;
+    	        document.getElementById("email").value = cliente.email;
+    	        document.getElementById("telefone").value = cliente.telefone;
+    	        // Adicione outros campos conforme necessário
+    	        // Caso tenha o clienteId no formulário para atualizá-lo
+    	        document.getElementById("clienteId").value = cliente.id;
+    	    } else {
+    	        alert("Cliente não encontrado!");
+    	    }
+    	};
+    	
+    	function salvarEdicao() {
+    	    // Recupera os dados do formulário
+    	    const clienteId = document.getElementById("clienteId").value;
+    	    const nome = document.getElementById("nome").value;
+    	    const email = document.getElementById("email").value;
+    	    const telefone = document.getElementById("telefone").value;
+    	    
+    	    // Cria um objeto com os dados editados
+    	    const clienteEditado = {
+    	        id: clienteId,
+    	        nome: nome,
+    	        email: email,
+    	        telefone: telefone
+    	    };
+
+    	    // Faz a requisição para salvar as alterações no back-end (no seu caso, um PUT)
+    	    fetch(`http://localhost:8080/cliente/cadastro-cliente/${clienteId}`, {
+    	        method: 'PUT', // ou 'PATCH' dependendo da implementação do back-end
+    	        headers: {
+    	            'Content-Type': 'application/json'
+    	        },
+    	        body: JSON.stringify(clienteEditado)
+    	    })
+    	    .then(response => response.json())
+    	    .then(data => {
+    	        alert("Cliente editado com sucesso!");
+    	        // Redirecionar ou fazer outra ação após a edição
+    	        window.location.href = "lista-de-clientes.html"; // ou o caminho para onde você quer redirecionar
+    	    })
+    	    .catch(error => {
+    	        console.error("Erro ao salvar cliente:", error);
+    	        alert("Erro ao salvar cliente.");
+    	    });
+    	}
+        
+
+        // Função para editar cliente
+       function editarCliente(clienteId) {
+	    fetch(`http://localhost:8080/cliente/cadastro-cliente/${clienteId}`)
+	    .then(response => response.json())
+	    .then(cliente => {
+	        if (cliente) {
+	            // Armazenar os dados do cliente para edição
+	            localStorage.setItem("clienteParaEditar", JSON.stringify(cliente));
+	
+	            // Navegar para a página de edição, onde você pode usar os dados armazenados
+	            window.location.href = "cadastrodeclientes.html"; // ou o caminho para a página de edição
+	        } else {
+	            alert("Cliente não encontrado!");
+	        }
+	    })
+	    .catch(error => {
+	        console.error("Erro ao buscar cliente:", error);
+	        alert("Erro ao buscar cliente.");
+	    });
+	}
+
+        // Função para deletar cliente
+        function deletarCliente(clienteId) {
+            if (confirm("Tem certeza que deseja deletar este cliente?")) {
+                fetch(`http://localhost:8080/clientes/${clienteId}`, {
+                    method: 'DELETE',
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            alert("Cliente deletado com sucesso!");
+                            listarClientes(); // Recarregar a lista de clientes após a exclusão
+                        } else {
+                            alert("Erro ao deletar o cliente.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erro ao deletar cliente:", error);
+                        alert("Erro ao deletar cliente.");
+                    });
+            }
+        }
+
+        // Chama a função para listar os clientes quando a página for carregada
+        window.onload = function () {
+            listarClientes();
+        }
+    </script>
+</body>
+
+</html>
