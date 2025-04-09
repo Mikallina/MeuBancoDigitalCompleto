@@ -73,9 +73,7 @@ public abstract class Conta {
 	}
 
 	public void setSaldo(double saldo) {
-		DecimalFormat df = new DecimalFormat("#,00");
-		String saldoFormatado = df.format(saldo);
-		this.saldo = Double.parseDouble(saldoFormatado);
+		this.saldo = saldo;
 	}
 
 	public Cliente getCliente() {

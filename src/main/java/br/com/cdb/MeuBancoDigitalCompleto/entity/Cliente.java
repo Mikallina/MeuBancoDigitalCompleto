@@ -29,6 +29,8 @@ public class Cliente {
 	private String cpf;
 	private LocalDate dataNascimento;
 	
+	private String statusCpf;
+	
 	@Embedded
 	private Endereco endereco;
 	
@@ -125,6 +127,14 @@ public class Cliente {
 
 	public void setContas(List<Conta> contas) {
 		this.contas = contas;
+	}
+	
+	public String getStatusCpf() {
+		return statusCpf;
+	}
+
+	public void setStatusCpf(String statusCpf) {
+		this.statusCpf = statusCpf;
 	}
 
 

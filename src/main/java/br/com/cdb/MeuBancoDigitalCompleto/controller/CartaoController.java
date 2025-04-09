@@ -85,7 +85,7 @@ public class CartaoController {
 	public ResponseEntity<String> alterarStatus(@PathVariable Long idCartao, @RequestParam boolean novoStatus) {
 		try {
 			Cartao cartao = cartaoService.alterarStatus(idCartao, novoStatus);
-			return ResponseEntity.ok("Status do cartão alterado com sucesso! Novo status: ");
+			return ResponseEntity.ok("Status do cartão alterado com sucesso!");
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao alterar status: " + e.getMessage());
 		}

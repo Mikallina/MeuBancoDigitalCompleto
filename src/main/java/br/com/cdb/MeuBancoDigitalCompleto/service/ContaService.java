@@ -234,7 +234,7 @@ public class ContaService {
 			if (contaDestino == null) {
 				throw new IllegalArgumentException("Conta de destino não encontrada");
 			}
-			contaOrigem.setSaldo(contaOrigem.getSaldo() - valor);
+			
 			contaDestino.setSaldo(contaDestino.getSaldo() + valor);
 			contaRepository.save(contaDestino);
 

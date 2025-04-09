@@ -76,8 +76,8 @@
 		</div>
 
 		<div class="form-group col-md-4">
-			<label for="inputCategoria">Categoria 1 Comum | 2  Super | 3 Premium 
-			 </label> <select id="inputCategoria" class="form-control">
+			<label for="inputCategoria">Categoria 1 Comum | 2 Super | 3
+				Premium </label> <select id="inputCategoria" class="form-control">
 				<option selected></option>
 				<option>1</option>
 				<option>2</option>
@@ -87,7 +87,8 @@
 
 
 		<button type="submit" class="btn btn-primary">Cadastrar</button>
-		<button type="button" class="btn btn-primary" onclick="window.history.back()">Voltar</button>
+		<button type="button" class="btn btn-primary"
+			onclick="window.history.back()">Voltar</button>
 	</form>
 	<script>
 function buscarEndereco() {
@@ -133,10 +134,10 @@ function enviarCadastro() {
             cep: document.getElementById("inputCEP").value
         }
     };
+
     if (!validarFormulario()) {
         return;
     }
-    // Enviar os dados para o servidor
     fetch('http://localhost:8080/cliente/addCliente', {
         method: 'POST',
         headers: {
@@ -144,15 +145,20 @@ function enviarCadastro() {
         },
         body: JSON.stringify(cliente)
     })
-    .then(response => response.json())
-    .then(data => {
-        alert("Cliente cadastrado com sucesso!");
-        console.log(data); // Verifica a resposta do servidor
+    .then(response => {
+        if (response.ok) {
+            alert("Cliente cadastrado com sucesso!");
+            console.log(data);
+        } else {
+            return response.text().then(text => {
+                alert("CPF já Cadastrado"); 
+            });
+        }
     })
     .catch(error => {
         console.error("Erro ao cadastrar cliente:", error);
     });
-} 
+}
 
 
 function validarIdade() {

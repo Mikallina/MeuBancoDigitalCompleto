@@ -40,57 +40,55 @@ public class CartaoService {
 	}
 
 	public Cartao criarCartao(Conta conta, TipoCartao tipoCartao, int senha, String diaVencimento) {
-	    if (conta == null) {
-	        throw new IllegalArgumentException("Erro: Cliente não pode ser null.");
-	    }
+		if (conta == null) {
+			throw new IllegalArgumentException("Erro: Cliente não pode ser null.");
+		}
+		LocalDate dataVencimento = null;
+		if (tipoCartao == TipoCartao.CREDITO) {
+			if (diaVencimento == null) {
+				throw new IllegalArgumentException("Erro: O dia de vencimento é obrigatório para cartões de crédito.");
+			}
+			int dia = Integer.parseInt(diaVencimento);
+			LocalDate dataAtual = LocalDate.now();
+			int anoAtual = dataAtual.getYear();
+			int mesAtual = dataAtual.getMonthValue();
 
-	    // Se o tipo de cartão for CREDITO, processa a data de vencimento
-	    LocalDate dataVencimento = null;
-	    if (tipoCartao == TipoCartao.CREDITO) {
-	        if (diaVencimento == null) {
-	            throw new IllegalArgumentException("Erro: O dia de vencimento é obrigatório para cartões de crédito.");
-	        }
-	        
-	        // Converte o dia de vencimento para um número
-	        int dia = Integer.parseInt(diaVencimento);
+			try {
+				dataVencimento = LocalDate.of(anoAtual, mesAtual, dia);
+			} catch (Exception e) {
+				System.out.println("Data inválida" + e.getMessage());
+			}
 
-	        // Define a data de vencimento
-	        LocalDate dataAtual = LocalDate.now();
-	        int anoAtual = dataAtual.getYear();
-	        int mesAtual = dataAtual.getMonthValue();
+			if (dataVencimento.isBefore(dataAtual)) {
+				if (mesAtual == 12) {
+					dataVencimento = LocalDate.of(anoAtual + 1, 1, dia);
+				} else {
+					dataVencimento = LocalDate.of(anoAtual, mesAtual + 1, dia);
+				}
+			}
+		}
 
-	        try {
-	            dataVencimento = LocalDate.of(anoAtual, mesAtual, dia);
-	        } catch (Exception e) {
-	            System.out.println("Data inválida" + e.getMessage());
-	        }
+		Cartao cartao;
+		String numCartao = gerarNumeroCartao(tipoCartao);
 
-	        if (dataVencimento.isBefore(dataAtual)) {
-	            if (mesAtual == 12) {
-	                dataVencimento = LocalDate.of(anoAtual + 1, 1, dia);
-	            } else {
-	                dataVencimento = LocalDate.of(anoAtual, mesAtual + 1, dia);
-	            }
-	        }
-	    }
+		if (tipoCartao == TipoCartao.CREDITO) {
+			cartao = new CartaoCredito(conta, senha, numCartao, TipoCartao.CREDITO, limiteDeCredito(conta),
+					diaVencimento, dataVencimento);
+		} else if (tipoCartao == TipoCartao.DEBITO) {
+			cartao = new CartaoDebito(conta, numCartao, TipoCartao.DEBITO, senha, limiteDiario(conta));
+		} else {
+			throw new IllegalArgumentException("Tipo de cartão inválido.");
+		}
 
-	    Cartao cartao;
-	    String numCartao = gerarNumeroCartao(tipoCartao);
+		cartaoRepository.save(cartao);
 
-	    if (tipoCartao == TipoCartao.CREDITO) {
-	        cartao = new CartaoCredito(conta, senha, numCartao, TipoCartao.CREDITO, limiteDeCredito(conta), diaVencimento, dataVencimento);
-	    } else if (tipoCartao == TipoCartao.DEBITO) {
-	        cartao = new CartaoDebito(conta, numCartao, TipoCartao.DEBITO, senha, limiteDiario(conta));
-	    } else {
-	        throw new IllegalArgumentException("Tipo de cartão inválido.");
-	    }
-
-	    cartaoRepository.save(cartao);
-	    
-	    return cartao;
+		return cartao;
 	}
 
 	public boolean alterarSenha(int senhaAntiga, int senhaNova, Cartao cartao) {
+		if (!cartao.isStatus()) {
+			throw new IllegalArgumentException("Status do Cartão Desativado");
+		}
 		if (cartao.getSenha() == senhaAntiga) {
 			cartao.setSenha(senhaNova);
 			System.out.println("Senha atualizada com sucesso.");
@@ -103,32 +101,35 @@ public class CartaoService {
 	}
 
 	public boolean alterarLimiteCartao(Long idCartao, double novoLimite) {
-	    Optional<Cartao> cartaoOptional = cartaoRepository.findById(idCartao);
+		Optional<Cartao> cartaoOptional = cartaoRepository.findById(idCartao);
 
-	    if (cartaoOptional.isPresent()) {
-	        Cartao cartao = cartaoOptional.get();
-	        System.out.println("Cartão Encontrado: " + cartao.getNumCartao());
+		if (cartaoOptional.isPresent()) {
+			Cartao cartao = cartaoOptional.get();
+			System.out.println("Cartão Encontrado: " + cartao.getNumCartao());
 
-	        if (cartao instanceof CartaoCredito) {
-	            CartaoCredito cartaoCredito = (CartaoCredito) cartao;
-	            cartaoCredito.alterarLimiteCredito(novoLimite);
-	            cartaoRepository.save(cartaoCredito);
-	            System.out.println("Limite de crédito atualizado para: R$ " + novoLimite);
-	            return true;
-	        } 
-	        else if (cartao instanceof CartaoDebito) {
-	            CartaoDebito cartaoDebito = (CartaoDebito) cartao;
-	            cartaoDebito.alterarLimiteDebito(novoLimite);
-	            cartaoRepository.save(cartaoDebito);
-	            System.out.println("Limite de débito atualizado para: R$ " + novoLimite);
-	            return true;
-	        } else {
-	            System.out.println("O cartão não é de crédito nem de débito.");
-	        }
-	    } else {
-	        System.out.println("Cartão não encontrado.");
-	    }
-	    return false;
+			if (!cartao.isStatus()) {
+				throw new IllegalArgumentException("Status do Cartão Desativado");
+			}
+
+			if (cartao instanceof CartaoCredito) {
+				CartaoCredito cartaoCredito = (CartaoCredito) cartao;
+				cartaoCredito.alterarLimiteCredito(novoLimite);
+				cartaoRepository.save(cartaoCredito);
+				System.out.println("Limite de crédito atualizado para: R$ " + novoLimite);
+				return true;
+			} else if (cartao instanceof CartaoDebito) {
+				CartaoDebito cartaoDebito = (CartaoDebito) cartao;
+				cartaoDebito.alterarLimiteDebito(novoLimite);
+				cartaoRepository.save(cartaoDebito);
+				System.out.println("Limite de débito atualizado para: R$ " + novoLimite);
+				return true;
+			} else {
+				System.out.println("O cartão não é de crédito nem de débito.");
+			}
+		} else {
+			System.out.println("Cartão não encontrado.");
+		}
+		return false;
 	}
 
 	public Cartao alterarStatus(Long idCartao, boolean novoStatus) {
@@ -180,6 +181,7 @@ public class CartaoService {
 	}
 
 	private double calcularTaxaUtilizacao(CartaoCredito credito, Conta conta) {
+
 		double limite = limiteDeCredito(conta);
 		double saldoDevido = credito.getSaldoMes();
 
@@ -208,7 +210,6 @@ public class CartaoService {
 		return numeroCartao;
 	}
 
-	// Método para gerar um número aleatório com 'n' dígitos
 	private String gerarNumeroAleatorio(int tamanho) {
 		Random random = new Random();
 		StringBuilder numero = new StringBuilder();
@@ -223,8 +224,6 @@ public class CartaoService {
 	private int calcularDigitoLuhn(String numeroParcial) {
 		int soma = 0;
 		boolean alternar = false;
-
-		// Processar os dígitos da direita para a esquerda
 		for (int i = numeroParcial.length() - 1; i >= 0; i--) {
 			int digito = Integer.parseInt(String.valueOf(numeroParcial.charAt(i)));
 
@@ -245,17 +244,17 @@ public class CartaoService {
 	}
 
 	public boolean realizarCompra(Long id, double valor, LocalDate dataCompra) throws Exception {
-
 		if (valor <= 0) {
 			System.out.println("O valor do pagamento deve ser positivo.");
 			return false;
 		}
-
 		Cartao cartao = cartaoRepository.findById(id).orElse(null);
 
 		if (cartao == null) {
 			throw new RuntimeException("Cartão Não encontrado");
-
+		}
+		if (!cartao.isStatus()) {
+			throw new IllegalArgumentException("Status do Cartão Desativado");
 		}
 
 		if (cartao instanceof CartaoCredito) {
@@ -282,28 +281,27 @@ public class CartaoService {
 	}
 
 	public boolean realizarPagamentoFatura(Long idCartao, double valorPagamento) throws Exception {
-		// Busca o cartão no repositório
 		Cartao cartao = cartaoRepository.findById(idCartao).orElse(null);
 
 		if (cartao == null || !(cartao instanceof CartaoCredito)) {
 			throw new RuntimeException("Cartão de crédito não encontrado ou tipo de cartão inválido.");
 		}
+		if (!cartao.isStatus()) {
+			throw new IllegalArgumentException("Status do Cartão Desativado");
+		}
 
 		CartaoCredito cartaoCredito = (CartaoCredito) cartao;
 
-		// Valida se o valor pago é maior que o saldo devedor
 		if (valorPagamento <= 0 || valorPagamento > cartaoCredito.getSaldoMes()) {
 			throw new RuntimeException("Valor do pagamento inválido.");
 		}
 
-		// Realiza o pagamento e ajusta o limite de crédito
 		boolean pagamentoEfetuado = cartaoCredito.pagarFatura(valorPagamento);
 
 		if (!pagamentoEfetuado) {
 			throw new RuntimeException("Não foi possível realizar o pagamento da fatura.");
 		}
 
-		// Depois de realizar o pagamento, salva o cartão com os novos valores
 		salvarCartao(cartaoCredito, true);
 
 		return true;

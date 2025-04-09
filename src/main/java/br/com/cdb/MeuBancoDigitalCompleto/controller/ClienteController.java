@@ -33,6 +33,10 @@ public class ClienteController {
 	@PostMapping("/adicionar-cliente")
     public ResponseEntity<String> addCliente(@RequestBody Cliente cliente) {
         try {
+        	 if (!clienteService.validarCpf(cliente.getCpf(), false, null)) {
+                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                         .body("CPF já cadastrado.");
+             }
             if (cliente.getEndereco() == null || cliente.getEndereco().getCep() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body("CEP não informado ou endereço incompleto.");

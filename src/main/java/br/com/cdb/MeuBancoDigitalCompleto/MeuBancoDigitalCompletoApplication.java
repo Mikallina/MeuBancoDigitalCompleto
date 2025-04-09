@@ -14,8 +14,4 @@ public class MeuBancoDigitalCompletoApplication {
 		SpringApplication.run(MeuBancoDigitalCompletoApplication.class, args);
 	}
 	
-	 @Bean
-	    public RestTemplate restTemplate() {
-	        return new RestTemplate();
-	    }
-}
+	}

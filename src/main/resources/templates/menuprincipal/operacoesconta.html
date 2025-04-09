@@ -124,26 +124,53 @@
     }
 
     function executarOperacao() {
-      const operacao = document.getElementById('operacao').value;
-      const valorOperacao = document.getElementById('valorOperacao').value;
-      const cpf = document.getElementById('cpf').value;
-      const contaSelecionada = document.getElementById('listaContas').value;
-      const numContaDestino = document.getElementById('numContaDestino').value;
+    	  const operacao = document.getElementById('operacao').value;
+    	  const valorOperacao = document.getElementById('valorOperacao').value;
+    	  const cpf = document.getElementById('cpf').value;
+    	  const contaSelecionada = document.getElementById('listaContas').value;
+    	  const numContaDestino = document.getElementById('numContaDestino').value;
 
-      if (operacao === "2") {
-        efetuarPIX(cpf, valorOperacao, contaSelecionada);
-      } else if (operacao === "3") {
-        transferenciaContaPoupanca(cpf, valorOperacao, contaSelecionada);
-      } else if (operacao === "4") {
-        transferenciaOutrasContas(cpf, valorOperacao, contaSelecionada, numContaDestino);
-      } else if (operacao === "5") {
-        exibirSaldo(cpf);
-      } else if (operacao === "6") {
-        efetuarDeposito(cpf, valorOperacao, contaSelecionada);
-      } else {
-        alert("Operação inválida.");
-      }
-    }
+    	  if (!operacao) {
+    	    alert("Selecione uma operação.");
+    	    return;
+    	  }
+
+    	  if (!valorOperacao || valorOperacao <= 0) {
+    	    alert("Digite um valor válido para a operação.");
+    	    return;
+    	  }
+
+    	  if (!contaSelecionada) {
+    	    alert("Selecione uma conta para a operação.");
+    	    return;
+    	  }
+
+    	  if (operacao === "4" && !numContaDestino) {
+    	    alert("Digite o número da conta destino para a transferência.");
+    	    return;
+    	  }
+
+    	  // Se passou nas validações, executa a operação
+    	  switch (operacao) {
+    	    case "2":
+    	      efetuarPIX(cpf, valorOperacao, contaSelecionada);
+    	      break;
+    	    case "3":
+    	      transferenciaContaPoupanca(cpf, valorOperacao, contaSelecionada);
+    	      break;
+    	    case "4":
+    	      transferenciaOutrasContas(cpf, valorOperacao, contaSelecionada, numContaDestino);
+    	      break;
+    	    case "5":
+    	      exibirSaldo(cpf);
+    	      break;
+    	    case "6":
+    	      efetuarDeposito(cpf, valorOperacao, contaSelecionada);
+    	      break;
+    	    default:
+    	      alert("Operação inválida.");
+    	  }
+    	}
 
     function efetuarPIX(cpf, valor, contaSelecionada) {
       if (valor && contaSelecionada) {
