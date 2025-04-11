@@ -12,6 +12,7 @@ public class MeuBancoDigitalCompletoApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MeuBancoDigitalCompletoApplication.class, args);
+
 	}
-	
-	}
+
+}

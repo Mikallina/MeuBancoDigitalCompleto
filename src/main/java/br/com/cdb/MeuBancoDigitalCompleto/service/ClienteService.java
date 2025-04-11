@@ -62,25 +62,25 @@ public class ClienteService {
 	}
 
 	public boolean validarCpf(String cpf, boolean isAtualizar, Long clienteId) {
-		ValidaCpf validaCpf = new ValidaCpf();
+	    // Validar CPF antes de consultar o banco de dados
+	    ValidaCpf validaCpf = new ValidaCpf();
+	    if (!validaCpf.isCPF(cpf)) {
+	        return false; // CPF inválido
+	    }
 
-		if (!validaCpf.isCPF(cpf)) {
-			return false;
-		}
-		if (isAtualizar) {
-			Cliente clienteExistente = clienteRepository.findByCpf(cpf);
-			if (clienteExistente != null && !clienteExistente.getIdCliente().equals(clienteId)) {
-				return false;
-			}
-		} else {
+	    if (isAtualizar) {
+	        Cliente clienteExistente = clienteRepository.findByCpf(cpf);
 
-			Cliente clienteExistente = clienteRepository.findByCpf(cpf);
-			if (clienteExistente != null) {
-				return false;
-			}
-		}
-
-		return true;
+	        if (clienteExistente != null && !clienteExistente.getIdCliente().equals(clienteId)) {
+	            return false;
+	        }
+	    } else {
+	        Cliente clienteExistente = clienteRepository.findByCpf(cpf);
+	        if (clienteExistente != null) {
+	            return false; 
+	        }
+	    }    
+	    return true; 
 	}
 
 	public boolean validarNome(String nome) {

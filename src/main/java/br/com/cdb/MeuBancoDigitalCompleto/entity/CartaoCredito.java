@@ -3,6 +3,7 @@ package br.com.cdb.MeuBancoDigitalCompleto.entity;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+import br.com.cdb.MeuBancoDigitalCompleto.enuns.Categoria;
 import br.com.cdb.MeuBancoDigitalCompleto.enuns.TipoCartao;
 import jakarta.persistence.Entity;
 
@@ -18,19 +19,13 @@ public class CartaoCredito extends Cartao {
 	protected double saldoMes;
 	protected String diaVencimento;
 
+	private double limiteCredito;
 
 	public String getDiaVencimento() {
 		return diaVencimento;
 	}
 	
-	public Fatura gerarFatura() {
-        Fatura fatura = new Fatura();
-        fatura.setId(this.getIdCartao());
-        fatura.setValorTotal(this.saldoMes);  
-        fatura.setDataVencimento(this.dataVencimento);
-        return fatura;
-    }
-
+	
     public boolean pagarFatura(double valorPagamento) {
         if (valorPagamento <= 0 || valorPagamento > this.saldoMes) {
             return false; 
@@ -46,7 +41,6 @@ public class CartaoCredito extends Cartao {
 		this.diaVencimento = diaVencimento;
 	}
 
-	private double limiteCredito;
 	
 	public CartaoCredito() {}
 
@@ -161,23 +155,9 @@ public class CartaoCredito extends Cartao {
 		this.limiteCredito = limiteCredito;
 	}
 
-	@Override
-	public void ativarSeguroViagem(Cliente cliente) {
-		if (cliente.getCategoria().getCodigo() != 3) {
-			System.out.println("Seguro viagem disponível por R$ 50,00/mês.");
-			if (this.limiteCredito >= 50.00) {
-				this.limiteCredito -= 50.00;
-				System.out.println("O valor de R$ 50,00 foi descontado do seu cartão para o seguro viagem.");
-			} else {
-				System.out.println("Saldo insuficiente no cartão para ativar o seguro viagem.");
-			}
-		} else {
-			System.out.println("Seguro viagem ativado gratuitamente!");
-		}
-	}
 
 	public CartaoCredito(double taxa, LocalDate dataVencimento, LocalDate dataCompra, double pagamento,
-			double saldoCredito, double saldoMes, double limiteCredito) {
+			double saldoCredito, double saldoMes, String diaVencimento, double limiteCredito) {
 		super();
 		this.taxa = taxa;
 		this.dataVencimento = dataVencimento;
@@ -185,8 +165,11 @@ public class CartaoCredito extends Cartao {
 		this.pagamento = pagamento;
 		this.saldoCredito = saldoCredito;
 		this.saldoMes = saldoMes;
+		this.diaVencimento = diaVencimento;
 		this.limiteCredito = limiteCredito;
 	}
+
+
 
 
 }

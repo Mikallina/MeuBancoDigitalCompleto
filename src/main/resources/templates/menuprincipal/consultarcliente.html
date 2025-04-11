@@ -11,56 +11,89 @@
 	rel="stylesheet"
 	integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
 	crossorigin="anonymous">
+<style>
+body {
+	background-color: #f8f9fa;
+	padding-top: 30px;
+}
+
+.card {
+	padding: 20px;
+	margin-bottom: 30px;
+}
+
+.table-container {
+	background-color: white;
+	border-radius: 5px;
+	padding: 20px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+	border-bottom: 2px solid #007bff;
+	padding-bottom: 5px;
+	margin-bottom: 20px;
+}
+</style>
 </head>
 
 <body>
-	<div class="container mt-4">
-		<h2>Consulta de Clientes</h2>
+	<div class="container">
+		<h2 class="text-center text-primary mb-4">Consulta de Clientes</h2>
 
-		<!-- Formulário para consulta de cliente pelo CPF -->
-		<div class="form-row">
-			<div class="form-group col-md-6">
-				<label for="inputCpf">Consultar Cliente pelo CPF</label> <input
-					type="text" class="form-control" id="cpf"
-					placeholder="Digite o CPF">
-			</div>
-			<div class="form-group col-md-2 d-flex align-items-end">
-				<button type="button" class="btn btn-primary"
-					onclick="consultarCliente()">Buscar</button>
+		<!-- Consulta pelo CPF -->
+		<div class="card">
+			<h5 class="section-title">Buscar Cliente pelo CPF</h5>
+			<div class="form-row">
+				<div class="form-group col-md-8">
+					<input type="text" class="form-control" id="cpf"
+						placeholder="Digite o CPF do cliente">
+				</div>
+				<div class="form-group col-md-4">
+					<button type="button" class="btn btn-primary btn-block"
+						onclick="consultarCliente()">Buscar</button>
+				</div>
 			</div>
 		</div>
 
-		<hr>
+		<!-- Tabela de clientes -->
+		<div class="table-container">
+			<h5 class="section-title">Clientes Cadastrados</h5>
+			<div class="table-responsive">
+				<table class="table table-hover table-striped">
+					<thead class="thead-light">
+						<tr>
+							<th scope="col">Nome</th>
+							<th scope="col">CPF</th>
+							<th scope="col">Data de Nascimento</th>
+							<th scope="col">Ações</th>
+						</tr>
+					</thead>
+					<tbody id="clientesList">
+						<!-- Dados preenchidos via JavaScript -->
+					</tbody>
+				</table>
+			</div>
+		</div>
 
-		<!-- Lista de clientes cadastrados -->
-		<h4>Clientes Cadastrados</h4>
-		<table class="table table-striped">
-			<thead>
-				<tr>
-					<th scope="col">Nome</th>
-					<th scope="col">CPF</th>
-					<th scope="col">Data de Nascimento</th>
-					<th scope="col">Ações</th>
-				</tr>
-			</thead>
-			<tbody id="clientesList">
-				<!-- Dados dos clientes serão inseridos aqui via JavaScript -->
-			</tbody>
-		</table>
-
+		<div class="text-center mt-4">
+			<button type="button" class="btn btn-outline-secondary"
+				onclick="window.history.back()">Voltar</button>
+		</div>
 	</div>
-
 	<script>
         // Função para consultar cliente por CPF
-        function consultarCliente() {
+    function consultarCliente() {
     const cpf = document.getElementById('cpf').value;
     if (cpf) {
+        console.log(`Procurando cliente com CPF: ${cpf}`);
+        
         fetch(`http://localhost:8080/cliente/buscarCpf/${cpf}`)
             .then(response => response.json())
             .then(data => {
-                var clientesList = document.getElementById('clientesList');
+                const clientesList = document.getElementById('clientesList');
                 clientesList.innerHTML = ''; // Limpa a lista de clientes antes de adicionar o resultado
-                
+
                 if (data) {
                     alert("Cliente encontrado!");
                     var row = document.createElement('tr');
@@ -69,12 +102,12 @@
                         <td>${data.cpf}</td>
                         <td>${data.dataNascimento}</td>
                         <td>
-                            <button class="btn btn-warning" onclick="editarCliente(${data.id})">Editar</button>
-                            <button class="btn btn-danger" onclick="deletarCliente(${data.id})">Deletar</button>
+                            <button class="btn btn-warning" onclick="editarCliente(${data.idCliente})">Editar</button> <!-- Alterado para usar idCliente -->
+                            <button class="btn btn-danger" onclick="deletarCliente(${data.idCliente})">Deletar</button> <!-- Alterado para usar idCliente -->
                         </td>
                     `;
                     clientesList.appendChild(row);
-                    
+
                     // Adiciona um botão para voltar à lista completa
                     var voltarButton = document.createElement('button');
                     voltarButton.className = 'btn btn-secondary mt-3';
@@ -112,8 +145,8 @@
                     <td>${cliente.cpf}</td>
                     <td>${cliente.dataNascimento}</td>
                     <td>
-                        <button class="btn btn-warning" onclick="editarCliente(${cliente.id})">Editar</button>
-                        <button class="btn btn-danger" onclick="deletarCliente(${cliente.id})">Deletar</button>
+                        <button class="btn btn-warning" onclick="editarCliente(${cliente.idCliente})">Editar</button>
+                        <button class="btn btn-danger" onclick="deletarCliente(${cliente.idCliente})">Deletar</button>
                     </td>
                 `;
                 clientesList.appendChild(row);
@@ -125,40 +158,51 @@
         });
 }
       window.onload = function() {
-    	    // Recupera os dados do cliente do localStorage
-    	    const cliente = JSON.parse(localStorage.getItem("clienteParaEditar"));
-
-    	    if (cliente) {
-    	        // Preencher os campos do formulário com os dados do cliente
-    	        document.getElementById("nome").value = cliente.nome;
-    	        document.getElementById("email").value = cliente.email;
-    	        document.getElementById("telefone").value = cliente.telefone;
-    	        // Adicione outros campos conforme necessário
-    	        // Caso tenha o clienteId no formulário para atualizá-lo
-    	        document.getElementById("clienteId").value = cliente.id;
-    	    } else {
-    	        alert("Cliente não encontrado!");
+    	    // Se estiver em cadastro, limpar todos os campos
+    	    if (window.location.href.includes("cadastro-cliente")) {
+    	        document.getElementById("inputNome").value = "";
+    	        document.getElementById("inputCpf").value = "";
+    	        document.getElementById("inputCategoria").value = "";
+    	        document.getElementById("inputDataNascimento").value = "";
+    	        document.getElementById("inputCep").value = "";
     	    }
+
+    	    // Se houver um cliente para editar, preencher os campos do formulário
+    	    const clienteEditando = localStorage.getItem("clienteParaEditar");
+    	    if (clienteEditando) {
+    	        const cliente = JSON.parse(clienteEditando);
+    	        document.getElementById("inputNome").value = cliente.nome || "";
+    	        document.getElementById("inputCpf").value = cliente.cpf || "";
+    	        document.getElementById("inputCategoria").value = cliente.categoria || "";
+    	        document.getElementById("inputDataNascimento").value = cliente.dataNascimento || "";
+    	        document.getElementById("inputCep").value = cliente.cep || "";
+    	    }
+
+    	    // Redireciona para a tela de cadastro de cliente (limpando localStorage)
+    	    document.getElementById("novoClienteBtn").addEventListener("click", function() {
+    	        localStorage.removeItem("clienteParaEditar");  // Limpa o cliente armazenado no localStorage
+    	        window.location.href = "/cliente/cadastro-cliente"; // Redireciona para a tela de cadastro
+    	    });
     	};
     	
     	function salvarEdicao() {
     	    // Recupera os dados do formulário
-    	    const clienteId = document.getElementById("clienteId").value;
+    	    const clienteId = document.getElementById("idCliente").value;
     	    const nome = document.getElementById("nome").value;
     	    const email = document.getElementById("email").value;
     	    const telefone = document.getElementById("telefone").value;
     	    
     	    // Cria um objeto com os dados editados
     	    const clienteEditado = {
-    	        id: clienteId,
+    	    	id: clienteId,
     	        nome: nome,
     	        email: email,
     	        telefone: telefone
     	    };
 
     	    // Faz a requisição para salvar as alterações no back-end (no seu caso, um PUT)
-    	    fetch(`http://localhost:8080/cliente/cadastro-cliente/${clienteId}`, {
-    	        method: 'PUT', // ou 'PATCH' dependendo da implementação do back-end
+    	    fetch(`http://localhost:8080/cliente/atualizar-cliente/${clienteId}`, {
+    	        method: 'PUT', 
     	        headers: {
     	            'Content-Type': 'application/json'
     	        },
@@ -168,7 +212,7 @@
     	    .then(data => {
     	        alert("Cliente editado com sucesso!");
     	        // Redirecionar ou fazer outra ação após a edição
-    	        window.location.href = "lista-de-clientes.html"; // ou o caminho para onde você quer redirecionar
+    	        window.location.href = "lista-de-clientes.html"; 
     	    })
     	    .catch(error => {
     	        console.error("Erro ao salvar cliente:", error);
@@ -176,7 +220,37 @@
     	    });
     	}
         
+    	function atualizarCliente(clienteId) {
+    	    const clienteAtualizado = {
+    	        nome: document.getElementById("inputNome").value,
+    	        categoria: document.getElementById("inputCategoria").value,
+    	        dataNascimento: document.getElementById("inputData").value,
+    	        endereco: {
+    	            cep: document.getElementById("inputCEP").value
+    	        }
+    	    };
 
+    	    fetch(`http://localhost:8080/cliente/cadastro-cliente/${clienteId}`, {
+    	        method: 'PUT',
+    	        headers: {
+    	            'Content-Type': 'application/json'
+    	        },
+    	        body: JSON.stringify(clienteAtualizado)
+    	    })
+    	    .then(response => {
+    	        if (response.ok) {
+    	            alert("Cliente atualizado com sucesso!");
+    	            localStorage.removeItem("clienteParaEditar"); // limpa localStorage
+    	            window.location.href = "/cliente/lista-clientes"; // atualiza tela
+    	        } else {
+    	            alert("Erro ao atualizar cliente");
+    	        }
+    	    })
+    	    .catch(error => {
+    	        console.error("Erro ao atualizar:", error);
+    	        alert("Erro na atualização.");
+    	    });
+    	}
         // Função para editar cliente
        function editarCliente(clienteId) {
 	    fetch(`http://localhost:8080/cliente/cadastro-cliente/${clienteId}`)
@@ -185,9 +259,7 @@
 	        if (cliente) {
 	            // Armazenar os dados do cliente para edição
 	            localStorage.setItem("clienteParaEditar", JSON.stringify(cliente));
-	
-	            // Navegar para a página de edição, onde você pode usar os dados armazenados
-	            window.location.href = "cadastrodeclientes.html"; // ou o caminho para a página de edição
+	            window.location.href = "cadastro-cliente";
 	        } else {
 	            alert("Cliente não encontrado!");
 	        }
@@ -201,7 +273,7 @@
         // Função para deletar cliente
         function deletarCliente(clienteId) {
             if (confirm("Tem certeza que deseja deletar este cliente?")) {
-                fetch(`http://localhost:8080/clientes/${clienteId}`, {
+                fetch(`http://localhost:8080/cliente/deletar-cliente/${clienteId}`, {
                     method: 'DELETE',
                 })
                     .then(response => {

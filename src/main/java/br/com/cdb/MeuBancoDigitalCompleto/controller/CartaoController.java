@@ -1,6 +1,9 @@
 package br.com.cdb.MeuBancoDigitalCompleto.controller;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,16 +18,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.cdb.MeuBancoDigitalCompleto.dto.AlterarSenhaDTO;
+import br.com.cdb.MeuBancoDigitalCompleto.dto.AlterarStatusDTO;
 import br.com.cdb.MeuBancoDigitalCompleto.dto.CompraCartaoDTO;
 import br.com.cdb.MeuBancoDigitalCompleto.dto.FaturaDTO;
 import br.com.cdb.MeuBancoDigitalCompleto.dto.LimiteDTO;
+import br.com.cdb.MeuBancoDigitalCompleto.dto.PagamentoFaturaDTO;
 import br.com.cdb.MeuBancoDigitalCompleto.dto.StatusDTO;
 import br.com.cdb.MeuBancoDigitalCompleto.entity.Cartao;
 import br.com.cdb.MeuBancoDigitalCompleto.entity.CartaoCredito;
 import br.com.cdb.MeuBancoDigitalCompleto.entity.CartaoDebito;
 import br.com.cdb.MeuBancoDigitalCompleto.entity.Cliente;
 import br.com.cdb.MeuBancoDigitalCompleto.entity.Conta;
-import br.com.cdb.MeuBancoDigitalCompleto.entity.Fatura;
 import br.com.cdb.MeuBancoDigitalCompleto.enuns.TipoCartao;
 import br.com.cdb.MeuBancoDigitalCompleto.service.CartaoService;
 import br.com.cdb.MeuBancoDigitalCompleto.service.ContaService;
@@ -41,59 +46,73 @@ public class CartaoController {
 
 	@PostMapping("/emitir-cartao")
 	public ResponseEntity<Cartao> emitirCartao(@RequestParam String contaC, @RequestParam TipoCartao tipoCartao,
-			@RequestParam(required = false) String diaVencimento) {
-		Conta conta = contaService.buscarContas(contaC);
-		if (conta != null) {
-			if (tipoCartao == TipoCartao.CREDITO && diaVencimento == null) {
-				return ResponseEntity.badRequest().body(null);
-			}
-			Cartao cartao = cartaoService.criarCartao(conta, tipoCartao, 1234, diaVencimento);
-			return ResponseEntity.ok(cartao);
-		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-		}
+	        @RequestParam(required = false) String diaVencimento) {
+	    Conta conta = contaService.buscarContas(contaC);
+
+	    if (conta != null) {
+	        // Verificar se a conta existe e se o vencimento foi fornecido para cartão de crédito
+	        if (tipoCartao == TipoCartao.CREDITO && diaVencimento == null) {
+	            return ResponseEntity.badRequest().body(null);
+	        }
+
+	        // Chamar o serviço de criação do cartão e associar ao id_conta
+	        Cartao cartao = cartaoService.criarCartao(conta, tipoCartao, 1234, diaVencimento);
+	        
+	        // Retornar o cartão criado como resposta
+	        return ResponseEntity.ok(cartao);
+	    } else {
+	        // Caso a conta não exista, retornar 404
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+	    }
 	}
 
-	@PutMapping("/alterar-senha/{idCartao}")
-	public ResponseEntity<String> alterarSenha(@PathVariable Long idCartao, @RequestParam int senhaNova,
-			@RequestParam int senhaAntiga) throws Exception {
-		Optional<Cartao> cartaoOptional = Optional.ofNullable(cartaoService.buscarCartaoPorCliente(idCartao));
+	@PutMapping("/alterar-senha/{numCartao}")
+	public ResponseEntity<String> alterarSenha(
+	        @PathVariable String numCartao,
+	        @RequestBody AlterarSenhaDTO dto) throws Exception {
 
-		if (cartaoOptional.isPresent()) {
-			Cartao cartao = cartaoOptional.get();
-			boolean sucesso = cartaoService.alterarSenha(senhaAntiga, senhaNova, cartao);
-			if (sucesso) {
-				return ResponseEntity.ok("Senha alterada com sucesso!");
-			} else {
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Senha antiga incorreta!");
-			}
-		} else {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cartão não encontrado!");
-		}
+	    int senhaAntiga = dto.getSenhaAntiga();
+	    int senhaNova = dto.getSenhaNova();
+
+	    Optional<Cartao> cartaoOptional = Optional.ofNullable(cartaoService.buscarCartaoPorCliente(numCartao));
+
+	    if (cartaoOptional.isPresent()) {
+	        Cartao cartao = cartaoOptional.get();
+	        boolean sucesso = cartaoService.alterarSenha(senhaAntiga, senhaNova, cartao);
+	        if (sucesso) {
+	            return ResponseEntity.ok("Senha alterada com sucesso!");
+	        } else {
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Senha antiga incorreta!");
+	        }
+	    } else {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cartão não encontrado!");
+	    }
 	}
 
 	@GetMapping("/obter-dados/{idCartao}")
-	public ResponseEntity<Cartao> buscarCartao(@PathVariable Long idCartao) {
-		Cartao cartao = (Cartao) cartaoService.buscarCartaoPorCliente(idCartao);
+	public ResponseEntity<Cartao> buscarCartao(@PathVariable String numCartao) {
+		Cartao cartao = (Cartao) cartaoService.buscarCartaoPorCliente(numCartao);
 		if (cartao == null) {
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.ok(cartao);
 	}
 
-	@PutMapping("/alterar-status/{idCartao}")
-	public ResponseEntity<String> alterarStatus(@PathVariable Long idCartao, @RequestParam boolean novoStatus) {
-		try {
-			Cartao cartao = cartaoService.alterarStatus(idCartao, novoStatus);
-			return ResponseEntity.ok("Status do cartão alterado com sucesso!");
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao alterar status: " + e.getMessage());
-		}
-	}
+	@PutMapping("/alterar-status/{numCartao}")
+    public ResponseEntity<String> alterarStatusCartao(@PathVariable String numCartao,
+                                                       @RequestBody AlterarStatusDTO dto) {
+        boolean alterado = cartaoService.alterarStatus(numCartao, dto.isStatus());
 
-	@PutMapping("/alterar-limite/{idCartao}")
-	public ResponseEntity<String> alterarLimite(@PathVariable Long idCartao, @RequestBody LimiteDTO limiteDTO) throws Exception {
-	    boolean limiteAlterado = cartaoService.alterarLimiteCartao(idCartao, limiteDTO.getNovoLimite());
+        if (alterado) {
+            return ResponseEntity.ok("Status do cartão alterado com sucesso!");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao alterar o status do cartão.");
+        }
+    }
+
+	@PutMapping("/alterar-limite/{numCartao}")
+	public ResponseEntity<String> alterarLimite(@PathVariable String numCartao, @RequestBody LimiteDTO limiteDTO) throws Exception {
+	    boolean limiteAlterado = cartaoService.alterarLimiteCartao(numCartao, limiteDTO.getNovoLimite());
 	    
 	    if (limiteAlterado) {
 	        return ResponseEntity.ok("Limite atualizado com sucesso.");
@@ -101,50 +120,61 @@ public class CartaoController {
 	        return ResponseEntity.badRequest().body("Erro ao atualizar o limite do cartão.");
 	    }
 	}
+	
+	@GetMapping("/{numeroConta}")
+	public ResponseEntity<List<Cartao>> verificarCartao(@PathVariable String numeroConta) {
+	    // Busca a conta pela numConta
+	    Conta conta = contaService.buscarContas(numeroConta);
 
-	@PostMapping("/compra-cartao/{idCartao}")
-	public ResponseEntity<String> realizarPagamento(@RequestBody CompraCartaoDTO compraCartaoDTO,
-			@PathVariable Long idCartao) throws Exception {
-		Cartao cartao = (Cartao) cartaoService.buscarCartaoPorCliente(idCartao);
-		System.out.println("Cartao Encontrado" + idCartao);
-		if (cartao == null) {
-			return ResponseEntity.notFound().build();
-		}
+	    if (conta == null) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Conta não encontrada
+	    }
 
-		boolean compraRealizado = cartaoService.realizarCompra(idCartao, compraCartaoDTO.getValor(),
-				compraCartaoDTO.getDataCompra());
-		if (!compraRealizado) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Pagamento não autorizado.");
-		}
+	    // Procura o cartão associado a essa conta
+	    List<Cartao> cartoes = cartaoService.buscarCartaoPorConta(conta);
 
-		return ResponseEntity.ok("Pagamento realizado com sucesso.");
+	    if (cartoes == null || cartoes.isEmpty()) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Nenhum cartão encontrado
+	    }
+
+	
+
+	    return ResponseEntity.ok(cartoes); 
 	}
 
-	@GetMapping("/fatura/{idCartao}")
-	public ResponseEntity<Fatura> consultarFatura(@PathVariable Long idCartao) {
-		Cartao cartao = (Cartao) cartaoService.buscarCartaoPorCliente(idCartao);
-		if (cartao == null || !(cartao instanceof CartaoCredito)) {
-			return ResponseEntity.notFound().build();
-		}
+	@PostMapping("/compra-cartao")
+	public ResponseEntity<String> realizarPagamento(@RequestBody CompraCartaoDTO compraCartaoDTO) throws Exception {
+	  
+	    String numCartao = compraCartaoDTO.getNumCartao();  // O número do cartão
+	    Cartao cartao = cartaoService.buscarCartaoPorNumero(numCartao);  // Buscar o Cartão usando o número do cartão
+	    System.out.println(numCartao);
+	    if (cartao == null) {
+	        return ResponseEntity.notFound().build();
+	    }
 
-		CartaoCredito cartaoCredito = (CartaoCredito) cartao;
-		Fatura fatura = cartaoCredito.gerarFatura();
-		return ResponseEntity.ok(fatura);
+	    boolean compraRealizado = cartaoService.realizarCompra(cartao.getNumCartao(), compraCartaoDTO.getValor(),
+	            compraCartaoDTO.getDataCompra());
+	    if (!compraRealizado) {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Pagamento não autorizado.");
+	    }
+
+	    return ResponseEntity.ok("Pagamento realizado com sucesso.");
 	}
 
-	@PostMapping("/fatura/pagamento/{idCartao}")
-	public ResponseEntity<String> pagarFatura(@PathVariable Long idCartao,
-			@RequestBody FaturaDTO pagamentoFaturaRequest) throws Exception {
-		try {
-			boolean pagamentoEfetuado = cartaoService.realizarPagamentoFatura(idCartao,
-					pagamentoFaturaRequest.getValor());
-			if (!pagamentoEfetuado) {
-				return ResponseEntity.badRequest().body("Não foi possível realizar o pagamento da fatura.");
-			}
-			return ResponseEntity.ok("Pagamento da fatura realizado com sucesso.");
-		} catch (RuntimeException e) {
-			return ResponseEntity.notFound().build(); // Retorna 404 se o cartão não for encontrado ou se for inválido
-		}
+	@GetMapping("/fatura/{numCartao}")
+	public ResponseEntity<?> consultarFatura(@PathVariable String numCartao) {
+	    double fatura = cartaoService.consultarFatura(numCartao);
+	    return ResponseEntity.ok(Map.of("fatura", fatura));
+	}
+
+	@PutMapping("/pagar-fatura")
+	public ResponseEntity<String> pagarFatura(@RequestBody PagamentoFaturaDTO dto) throws Exception {
+	    boolean sucesso = cartaoService.realizarPagamentoFatura(dto.getNumCartao(), dto.getValor());
+	    if (sucesso) {
+	        return ResponseEntity.ok("Fatura paga com sucesso.");
+	    } else {
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao pagar fatura.");
+	    }
 	}
 
 	

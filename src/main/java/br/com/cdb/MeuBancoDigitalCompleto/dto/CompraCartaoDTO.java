@@ -8,14 +8,17 @@ public class CompraCartaoDTO {
 	
 	private Long id;
 	private double valor;
-	@JsonFormat(pattern = "dd/MM/yyyy")
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate dataCompra;
-	public CompraCartaoDTO(Long id, double valor, LocalDate dataCompra) {
-		super();
-		this.id = id;
-		this.valor = valor;
-		this.dataCompra = dataCompra;
+	private String numCartao;
+	
+	public String getNumCartao() {
+		return numCartao;
 	}
+	public void setNumeroCartao(String numCartao) {
+		this.numCartao = numCartao;
+	}
+	
 	public Long getId() {
 		return id;
 	}
@@ -33,6 +36,13 @@ public class CompraCartaoDTO {
 	}
 	public void setDataCompra(LocalDate dataCompra) {
 		this.dataCompra = dataCompra;
+	}
+	public CompraCartaoDTO(Long id, double valor, LocalDate dataCompra, String numCartao) {
+		super();
+		this.id = id;
+		this.valor = valor;
+		this.dataCompra = dataCompra;
+		this.numCartao = numCartao;
 	}
 	
 

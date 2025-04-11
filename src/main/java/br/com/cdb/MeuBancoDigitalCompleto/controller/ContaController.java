@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.cdb.MeuBancoDigitalCompleto.dto.ContaResponseDTO;
 import br.com.cdb.MeuBancoDigitalCompleto.dto.DepositoDTO;
 import br.com.cdb.MeuBancoDigitalCompleto.dto.TransferenciaDTO;
 import br.com.cdb.MeuBancoDigitalCompleto.entity.Cliente;
@@ -24,6 +26,7 @@ import br.com.cdb.MeuBancoDigitalCompleto.service.ContaService;
 
 @RestController
 @RequestMapping("/conta")
+@CrossOrigin(origins = "http://localhost:5500")
 public class ContaController {
 
 	@Autowired
@@ -64,7 +67,7 @@ public class ContaController {
 	// Endpoint para efetuar depósito
 	@PostMapping("/depositar")
 	public ResponseEntity<String> depositar(@RequestBody DepositoDTO depositoDTO) {
-		boolean sucesso = contaService.realizarDeposito(depositoDTO.getId(), depositoDTO.getValor());
+		boolean sucesso = contaService.realizarDeposito(depositoDTO.getNumConta(), depositoDTO.getValor());
 
 		if (sucesso) {
 			return ResponseEntity.ok("Depósito realizado com sucesso!");
@@ -72,6 +75,11 @@ public class ContaController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao realizar depósito.");
 		}
 	}
+	/*
+	 * @GetMapping("/conta/extrato") public ResponseEntity<List<Transacao>>
+	 * consultarExtrato(@RequestParam String cpf) { List<Transacao> extrato =
+	 * contaService.consultarExtrato(cpf); return ResponseEntity.ok(extrato); }
+	 */
 
 	// Verificado
 	@PostMapping("/efetuarPIX")
@@ -143,10 +151,24 @@ public class ContaController {
 	}
 
 	// Endpoint para exibir o saldo de uma conta
-	@GetMapping("/exibirSaldo")
-	public ResponseEntity<String> exibirSaldo(@RequestParam String cpf) {
-		double saldo = contaService.obterSaldo(cpf);
-		return ResponseEntity.ok("Saldo da conta: R$ " + saldo);
-	}
+	 @GetMapping("/exibirSaldoDetalhado")
+	    public ResponseEntity<?> exibirSaldoDetalhado(@RequestParam String cpf, @RequestParam String numConta) {
+	        try {
+	            // Chama o método do service para buscar a conta
+	            Conta conta = contaService.buscarContaPorClienteEConta(cpf, numConta);
+
+	            // Retorna os dados da conta em um DTO
+	            ContaResponseDTO contaResponseDTO = new ContaResponseDTO(
+	                    conta.getCliente().getNome(),
+	                    conta.getCliente().getCpf(),
+	                    conta
+	            );
+
+	            return ResponseEntity.ok(contaResponseDTO);
+
+	        } catch (IllegalArgumentException e) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+	        }
+	    }
 
 }

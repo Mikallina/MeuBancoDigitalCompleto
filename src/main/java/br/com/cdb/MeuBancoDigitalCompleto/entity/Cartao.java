@@ -31,7 +31,8 @@ public abstract class Cartao {
     private String numCartao;
 
     @ManyToOne
-    @JoinColumn(name = "conta_id", referencedColumnName = "idConta")  
+    @JoinColumn(name = "id_conta", referencedColumnName = "idConta")  
+    @JsonBackReference
     private Conta conta;
 
     private boolean status;
@@ -41,19 +42,15 @@ public abstract class Cartao {
     protected TipoCartao tipoCartao;
 
     private int senha;
+    
+    private double fatura;
+    
+    
 
 	public Cartao() {
 
 	}
-	public Cartao(Long idCartao, String numCartao, Conta conta, boolean status, TipoCartao tipoCartao, int senha) {
-		super();
-		this.idCartao = idCartao;
-		this.numCartao = numCartao;
-		this.conta = conta;
-		this.status = status;
-		this.tipoCartao = tipoCartao;
-		this.senha = senha;
-	}
+
 	
 	public Cartao(String numCartao, Conta conta, TipoCartao tipoCartao, int senha, boolean status) {
 		super();
@@ -66,7 +63,28 @@ public abstract class Cartao {
 	
 	
 	
+	public double getFatura() {
+		return fatura;
+	}
 
+
+	public void setFatura(double fatura) {
+		this.fatura = fatura;
+	}
+
+
+	public Conta getConta() {
+		return conta;
+	}
+	public void setConta(Conta conta) {
+		this.conta = conta;
+	}
+	public TipoCartao getTipoCartao() {
+		return tipoCartao;
+	}
+	public void setTipoCartao(TipoCartao tipoCartao) {
+		this.tipoCartao = tipoCartao;
+	}
 	public Long getIdCartao() {
 		return idCartao;
 	}
@@ -114,10 +132,5 @@ public abstract class Cartao {
 
 
 
-	public abstract void ativarSeguroViagem(Cliente cliente);
-
-
-
-
-
+	
 }

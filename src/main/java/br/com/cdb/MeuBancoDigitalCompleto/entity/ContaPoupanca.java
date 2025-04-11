@@ -49,4 +49,10 @@ public class ContaPoupanca extends Conta {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	public ContaPoupanca(double taxaRendimento) {
+		super();
+		this.taxaRendimento = taxaRendimento;
+	}
+
 }

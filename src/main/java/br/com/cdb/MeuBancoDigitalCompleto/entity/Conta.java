@@ -26,6 +26,12 @@ import jakarta.persistence.OneToMany;
 @Inheritance(strategy = InheritanceType.JOINED) 
 public abstract class Conta {
 
+	public List<Cartao> getCartoes() {
+		return cartoes;
+	}
+	public void setCartoes(List<Cartao> cartoes) {
+		this.cartoes = cartoes;
+	}
 	@ManyToOne
 	@JoinColumn(name = "cliente_id", referencedColumnName = "idCliente")
 	@JsonBackReference
@@ -119,5 +125,16 @@ public abstract class Conta {
 
 	protected abstract double getSaldoTotal();
 	protected abstract Conta[] values();
+	public Conta(Cliente cliente, Long idConta, int agencia, String numConta, double saldo, TipoConta tipoConta,
+			List<Cartao> cartoes) {
+		super();
+		this.cliente = cliente;
+		this.idConta = idConta;
+		this.agencia = agencia;
+		this.numConta = numConta;
+		this.saldo = saldo;
+		this.tipoConta = tipoConta;
+		this.cartoes = cartoes;
+	}
 	
 }

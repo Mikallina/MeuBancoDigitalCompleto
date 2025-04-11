@@ -13,7 +13,7 @@ import br.com.cdb.MeuBancoDigitalCompleto.repository.LoginRepository;
 import br.com.cdb.MeuBancoDigitalCompleto.service.LoginService;
 
 @Controller
-@RequestMapping("/home")
+@RequestMapping("/")
 public class LoginController {
 
     @Autowired
@@ -21,19 +21,18 @@ public class LoginController {
 
     @GetMapping("/login")
     public String showLoginPage() {
-        return "home/login"; 
+        return "login"; // Retorna a view do formulário de login
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam String email, @RequestParam String senha, Model model) {
-        boolean autenticado = loginService.autenticar(email, senha);
+    public String login(@RequestParam String username, @RequestParam String password, Model model) {
+        boolean autenticado = loginService.autenticar(username, password);
         if (autenticado) {
             model.addAttribute("message", "Login bem-sucedido!");
-            System.out.println("Login Efetuado com Sucesso");
-            return "redirect:/menuprincipal/menuprincipal"; 
+            return "redirect:/home"; // Redireciona após login bem-sucedido
         } else {
             model.addAttribute("message", "Email ou senha inválidos!");
-            return "home/login";  
+            return "home/login"; // Retorna à página de login em caso de falha
         }
     }
 }

@@ -137,6 +137,19 @@ public class Cliente {
 		this.statusCpf = statusCpf;
 	}
 
+	public Cliente(Long idCliente, String nome, String cpf, LocalDate dataNascimento, String statusCpf,
+			Endereco endereco, Categoria categoria, List<Conta> contas) {
+		super();
+		this.idCliente = idCliente;
+		this.nome = nome;
+		this.cpf = cpf;
+		this.dataNascimento = dataNascimento;
+		this.statusCpf = statusCpf;
+		this.endereco = endereco;
+		this.categoria = categoria;
+		this.contas = contas;
+	}
+
 
 
 }

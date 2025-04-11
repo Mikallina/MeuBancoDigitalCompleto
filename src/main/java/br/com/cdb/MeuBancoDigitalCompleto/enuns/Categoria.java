@@ -4,36 +4,32 @@ import jakarta.persistence.Entity;
 
 public enum Categoria {
 
-	COMUM(1, "Comum"),
-	SUPER(2, "Super"),
-	PREMIUM(3, "Premium");
-	
-	private final Integer codigo;
+	COMUM("Comum"),
+	SUPER("Super"),
+	PREMIUM("Premium");
+
 	private final String descricao;
 
-	Categoria(int codigo, String descricao) {
-		this.codigo = codigo;
-		this.descricao = descricao;
-	}
 
-
-	public Integer getCodigo() {
-		return codigo;
-	}
 
 	public String getDescricao() {
 		return descricao;
 	}
+
+	private Categoria(String descricao) {
+		this.descricao = descricao;
+	}
 	
-	 public static Categoria fromCodigo(int codigo) {
+
+	public static Categoria fromCodigo(int descricao) {
 	        for (Categoria categoria : Categoria.values()) {
-	            if (categoria.getCodigo() == codigo) {
+	            if (categoria.descricao.equals(categoria)) {
 	                return categoria;
 	            }
 	        }
-	        throw new IllegalArgumentException("Código de categoria inválido: " + codigo);
+	        throw new IllegalArgumentException("Código de categoria inválido: " + descricao);
 	    }
-	
+
 	
 	
 }

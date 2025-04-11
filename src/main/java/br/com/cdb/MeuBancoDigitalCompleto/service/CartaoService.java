@@ -18,6 +18,7 @@ import br.com.cdb.MeuBancoDigitalCompleto.entity.Conta;
 import br.com.cdb.MeuBancoDigitalCompleto.enuns.Categoria;
 import br.com.cdb.MeuBancoDigitalCompleto.enuns.TipoCartao;
 import br.com.cdb.MeuBancoDigitalCompleto.repository.CartaoRepository;
+import br.com.cdb.MeuBancoDigitalCompleto.repository.ContaRepository;
 
 @Service
 public class CartaoService {
@@ -100,8 +101,8 @@ public class CartaoService {
 		}
 	}
 
-	public boolean alterarLimiteCartao(Long idCartao, double novoLimite) {
-		Optional<Cartao> cartaoOptional = cartaoRepository.findById(idCartao);
+	public boolean alterarLimiteCartao(String numCartao, double novoLimite) throws Exception {
+		Optional<Cartao> cartaoOptional = Optional.ofNullable(cartaoRepository.findByNumCartao(numCartao));
 
 		if (cartaoOptional.isPresent()) {
 			Cartao cartao = cartaoOptional.get();
@@ -132,14 +133,14 @@ public class CartaoService {
 		return false;
 	}
 
-	public Cartao alterarStatus(Long idCartao, boolean novoStatus) {
-		Optional<Cartao> cartaoOptional = cartaoRepository.findById(idCartao);
+	public boolean alterarStatus(String numCartao, boolean novoStatus) {
+		Optional<Cartao> cartaoOptional = Optional.ofNullable(cartaoRepository.findByNumCartao(numCartao));
 		if (cartaoOptional.isPresent()) {
 			Cartao cartao = cartaoOptional.get();
 			cartao.setStatus(novoStatus);
 			cartaoRepository.save(cartao);
 			System.out.println("Status do cartão de número " + cartao.getNumCartao() + " alterado para " + novoStatus);
-			return cartao;
+			return true;
 		} else {
 			throw new IllegalArgumentException("Cartão não encontrado com o ID fornecido.");
 		}
@@ -193,15 +194,6 @@ public class CartaoService {
 		}
 	}
 
-	public void ativarSeguroViagem(Cliente cliente, Cartao cartao) {
-		if (cartao instanceof CartaoCredito) {
-			CartaoCredito cartaoCredito = (CartaoCredito) cartao;
-			cartaoCredito.ativarSeguroViagem(cliente);
-		} else {
-			System.out.println("Este cartão não é do tipo crédito, portanto não pode ativar seguro viagem.");
-		}
-	}
-
 	public String gerarNumeroCartao(TipoCartao tipoCartao) {
 
 		String numeroParcial = gerarNumeroAleatorio(15);
@@ -243,13 +235,13 @@ public class CartaoService {
 		return digitoVerificador;
 	}
 
-	public boolean realizarCompra(Long id, double valor, LocalDate dataCompra) throws Exception {
+	public boolean realizarCompra(String numCartao, double valor, LocalDate dataCompra) throws Exception {
 		if (valor <= 0) {
 			System.out.println("O valor do pagamento deve ser positivo.");
 			return false;
 		}
-		Cartao cartao = cartaoRepository.findById(id).orElse(null);
-
+		Cartao cartao = cartaoRepository.findByNumCartao(numCartao);
+		
 		if (cartao == null) {
 			throw new RuntimeException("Cartão Não encontrado");
 		}
@@ -280,8 +272,8 @@ public class CartaoService {
 		}
 	}
 
-	public boolean realizarPagamentoFatura(Long idCartao, double valorPagamento) throws Exception {
-		Cartao cartao = cartaoRepository.findById(idCartao).orElse(null);
+	public boolean realizarPagamentoFatura(String numCartao, double valorPagamento) throws Exception {
+		Cartao cartao = cartaoRepository.findByNumCartao(numCartao);
 
 		if (cartao == null || !(cartao instanceof CartaoCredito)) {
 			throw new RuntimeException("Cartão de crédito não encontrado ou tipo de cartão inválido.");
@@ -307,12 +299,38 @@ public class CartaoService {
 		return true;
 	}
 
-	public Cartao buscarCartaoPorCliente(Long idCartao) {
-		Optional<Cartao> cartoes = cartaoRepository.findById(idCartao);
+	public Cartao buscarCartaoPorCliente(String numCartao) {
+		Optional<Cartao> cartoes = Optional.ofNullable(cartaoRepository.findByNumCartao(numCartao));
 		if (cartoes != null && !cartoes.isEmpty()) {
 			return cartoes.get();
 		}
 		return null;
 	}
+	
+	public List<Cartao> buscarCartaoPorConta(Conta conta) {
+	    return cartaoRepository.findByConta(conta);
+	}
 
+	public Cartao buscarCartaoPorNumero(String numCartao) {
+		
+		return cartaoRepository.findByNumCartao(numCartao);
+	}
+	public double consultarFatura(String numCartao) {
+	    Cartao cartao = cartaoRepository.findByNumCartao(numCartao);
+	    
+	    if (cartao == null) {
+	        throw new IllegalArgumentException("Cartão não encontrado");
+	    }
+
+	    if (cartao instanceof CartaoCredito) {
+
+	        CartaoCredito cartaoCredito = (CartaoCredito) cartao;
+
+	        return cartaoCredito.getPagamento();
+	    } else {
+
+	        throw new IllegalArgumentException("Cartão não é de crédito");
+	    }
+	}
+	
 }

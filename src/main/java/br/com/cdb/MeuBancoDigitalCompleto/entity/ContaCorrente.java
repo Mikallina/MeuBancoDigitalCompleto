@@ -60,4 +60,10 @@ public class ContaCorrente extends Conta {
 		return null;
 	}
 
+	public ContaCorrente(double taxaManutencao) {
+		super();
+		this.taxaManutencao = taxaManutencao;
+	}
+
+
 }

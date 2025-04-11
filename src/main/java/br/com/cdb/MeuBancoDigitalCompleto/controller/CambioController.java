@@ -1,4 +1,6 @@
 package br.com.cdb.MeuBancoDigitalCompleto.controller;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -6,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import br.com.cdb.MeuBancoDigitalCompleto.service.CambioService;
 
 @RestController
-@RequestMapping("/api/cambio")
+@RequestMapping("/cambio")
 public class CambioController {
 
     @Autowired
@@ -24,4 +26,14 @@ public class CambioController {
             return ResponseEntity.status(500).body("Erro: " + e.getMessage());
         }
     }
+    @GetMapping("/moedas")
+    public ResponseEntity<?> listarMoedas() {
+        try {
+            Map<String, String> moedas = cambioService.obterMoedasDisponiveis();
+            return ResponseEntity.ok(moedas);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Erro ao obter as moedas disponíveis: " + e.getMessage());
+        }
+    }
+    
 }

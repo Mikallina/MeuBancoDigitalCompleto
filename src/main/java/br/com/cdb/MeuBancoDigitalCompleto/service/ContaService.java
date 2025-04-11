@@ -10,6 +10,7 @@ import br.com.cdb.MeuBancoDigitalCompleto.entity.Conta;
 import br.com.cdb.MeuBancoDigitalCompleto.entity.ContaCorrente;
 import br.com.cdb.MeuBancoDigitalCompleto.entity.ContaPoupanca;
 import br.com.cdb.MeuBancoDigitalCompleto.enuns.TipoConta;
+import br.com.cdb.MeuBancoDigitalCompleto.repository.ClienteRepository;
 import br.com.cdb.MeuBancoDigitalCompleto.repository.ContaRepository;
 
 @Service
@@ -17,6 +18,9 @@ public class ContaService {
 
 	@Autowired
 	private ContaRepository contaRepository;
+	
+    @Autowired
+    private ClienteRepository clienteRepository;
 	double taxaRendimento = 0;
 
 	public void salvarConta(Cliente cliente, Conta conta, TipoConta tipoConta) {
@@ -176,17 +180,17 @@ public class ContaService {
 
 	public boolean realizarTransferenciaPoupanca(double valor, String numContaOrigem, String numContaDestino) {
 
-		return realizarTransferencia(valor, numContaOrigem, numContaDestino, true, false);
+		return realizarTransferencia(valor, numContaOrigem, numContaDestino, true, false, false);
 	}
 
 	public boolean realizarTransferenciaPIX(double valor, String numContaOrigem, String chaveDestino) {
 
-		return realizarTransferencia(valor, numContaOrigem, chaveDestino, false, true);
+		return realizarTransferencia(valor, numContaOrigem, chaveDestino, false, true, false);
 	}
 
 	public boolean realizarTransferenciaOutrasContas(double valor, String numContaOrigem, String numContaDestino) {
 
-		return realizarTransferenciaOutrasContas(valor, numContaOrigem, numContaDestino);
+		return realizarTransferencia(valor, numContaOrigem, numContaDestino, false, false, true);
 	}
 
 	public double obterSaldo(String cpf) {
@@ -194,12 +198,13 @@ public class ContaService {
 		return 0;
 	}
 
-	public boolean realizarDeposito(Long id, double valor) {
+	public boolean realizarDeposito(String numContaDestino, double valor) {
 		if (valor <= 0) {
 			throw new IllegalArgumentException("Valor do depósito não pode ser zero");
 		}
 
-		Conta conta = contaRepository.findById(id).orElse(null);
+		Conta conta = contaRepository.findByNumConta(numContaDestino);
+		System.out.println("Número da conta recebido no backend: " + numContaDestino);
 		if (conta == null) {
 			throw new RuntimeException("Conta Não encontrada");
 		}
@@ -212,49 +217,66 @@ public class ContaService {
 	}
 
 	public boolean realizarTransferencia(double valor, String numContaOrigem, String numContaDestino,
-			boolean transferenciaPoupança, boolean transferenciaPix) {
+			boolean transferenciaPoupança, boolean transferenciaPix, boolean transferenciaOutrasContas) {
+
+
 		Conta contaOrigem = contaRepository.findByNumConta(numContaOrigem);
+		Conta contaDestino = contaRepository.findByNumConta(numContaDestino);
+		
 		if (contaOrigem == null) {
 			throw new IllegalArgumentException("Conta de origem não encontrada.");
 		}
 
 		if (valor <= 0) {
-			throw new IllegalArgumentException("Valor não pode ser zero ou negativo");
+			throw new IllegalArgumentException("Valor não pode ser zero ou negativo.");
 		}
 
 		if (valor > contaOrigem.getSaldo()) {
-			throw new IllegalArgumentException("Saldo insuficiente");
+			throw new IllegalArgumentException("Saldo insuficiente.");
 		}
 
-		contaOrigem.setSaldo(contaOrigem.getSaldo() - valor);
-
-		if (transferenciaPoupança) {
-			Conta contaDestino = contaRepository.findByNumConta(numContaDestino);
-
+		if (transferenciaPoupança || transferenciaOutrasContas) {
 			if (contaDestino == null) {
-				throw new IllegalArgumentException("Conta de destino não encontrada");
+				throw new IllegalArgumentException("Conta de destino não encontrada.");
 			}
-			
-			contaDestino.setSaldo(contaDestino.getSaldo() + valor);
-			contaRepository.save(contaDestino);
-
-		}
-		if (transferenciaPix) {
-			contaOrigem = contaRepository.findByNumConta(numContaOrigem);
 			contaOrigem.setSaldo(contaOrigem.getSaldo() - valor);
-			contaRepository.save(contaOrigem);
+			contaDestino.setSaldo(contaDestino.getSaldo() + valor);
+		}
+
+		if (transferenciaPix) {
+			contaOrigem.setSaldo(contaOrigem.getSaldo() - valor);
 		}
 
 		contaRepository.save(contaOrigem);
 
-		return true;
+// Se houve alguma modificação na conta de destino, salvar também
+		if (contaDestino != null && (transferenciaPoupança || transferenciaOutrasContas)) {
+			contaRepository.save(contaDestino);
+		}
 
+		return true;
 	}
 
 	public Conta buscarContas(String conta) {
 		return contaRepository.findByNumConta(conta);
 	}
 	
-	
+	public Conta buscarContaPorClienteEConta(String cpf, String numConta) {
+        // Busca o cliente com o CPF fornecido
+        Cliente cliente = clienteRepository.findByCpf(cpf);
+
+        if (cliente == null) {
+            throw new IllegalArgumentException("Cliente não encontrado.");
+        }
+
+        // Busca as contas do cliente
+        List<Conta> contas = contaRepository.findByCliente(cliente);
+
+        // Filtra a conta com base no número da conta
+        return contas.stream()
+                     .filter(c -> c.getNumConta().equals(numConta))
+                     .findFirst()
+                     .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada."));
+    }
 
 }

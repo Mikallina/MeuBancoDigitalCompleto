@@ -32,4 +32,17 @@ public class MenuController {
     public String consultarCliente() {
     	return "menuprincipal/consultarcliente";
     }
+    @GetMapping("/operacoes-cartao")
+    public String operacoesCartao() {
+    	return "menuprincipal/operacoescartao";
+    }
+    
+    @GetMapping("/atualizar-cliente")
+    public String atualizarCliente() {
+    	return "menuprincipal/atualizar-cliente";
+    }
+    @GetMapping("/cambio")
+    public String cambio() {
+    	return "menuprincipal/cambio";
+    }
 }

@@ -6,10 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import br.com.cdb.MeuBancoDigitalCompleto.entity.Cartao;
+import br.com.cdb.MeuBancoDigitalCompleto.entity.Conta;
 
 @Repository
 public interface CartaoRepository extends JpaRepository<Cartao, Long> {
-	//Cartao findByClienteCpf(String cpfCliente);
+    List<Cartao> findByConta(Conta conta); // Aqui a busca será feita pela entidade Conta
 
-	List<Cartao> findByConta_IdConta(Long idConta);
+	Cartao findByNumCartao(String numCartao);
 }

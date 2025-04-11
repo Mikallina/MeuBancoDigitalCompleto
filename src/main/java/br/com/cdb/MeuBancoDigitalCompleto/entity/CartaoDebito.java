@@ -12,7 +12,6 @@ public class CartaoDebito extends Cartao {
 	private double taxa = 0.05;
 	
 	@ManyToOne
-	@JoinColumn(name = "id_conta")
 	private Conta conta;
 	private double limiteDiario;
 	private double totalPgtoHoje = 0;
@@ -52,10 +51,6 @@ public class CartaoDebito extends Cartao {
 		this.limiteDiario = novoLimite;
 	}
 
-	@Override
-	public void ativarSeguroViagem(Cliente cliente) {
-
-	}
 
 	public double getTaxa() {
 		return taxa;
@@ -89,13 +84,6 @@ public class CartaoDebito extends Cartao {
 		this.totalPgtoHoje = totalPgtoHoje;
 	}
 
-	public CartaoDebito(double taxa, Conta conta, double limiteDiario, double totalPgtoHoje) {
-		super();
-		this.taxa = taxa;
-		this.conta = conta;
-		this.limiteDiario = limiteDiario;
-		this.totalPgtoHoje = totalPgtoHoje;
-	}
 
 
 }
