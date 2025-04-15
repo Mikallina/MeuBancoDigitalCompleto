@@ -35,7 +35,6 @@ public class ContaController {
 	@Autowired
 	private ClienteService clienteService;
 
-	// Verificado
 	@PostMapping("/criarConta")
 	public ResponseEntity<Conta> criarConta(@RequestParam String cpf, @RequestParam int agencia,
 			@RequestParam TipoConta tipoConta) {
@@ -48,7 +47,6 @@ public class ContaController {
 		}
 	}
 
-	// Verificado
 	@GetMapping("/buscarConta/{cpf}")
 	public ResponseEntity<List<Conta>> buscarContasPorCpf(@PathVariable String cpf) {
 		Cliente cliente = clienteService.buscarClientePorCpf(cpf);
@@ -63,8 +61,6 @@ public class ContaController {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 	}
 
-	// Verificado
-	// Endpoint para efetuar depósito
 	@PostMapping("/depositar")
 	public ResponseEntity<String> depositar(@RequestBody DepositoDTO depositoDTO) {
 		boolean sucesso = contaService.realizarDeposito(depositoDTO.getNumConta(), depositoDTO.getValor());
@@ -75,13 +71,7 @@ public class ContaController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao realizar depósito.");
 		}
 	}
-	/*
-	 * @GetMapping("/conta/extrato") public ResponseEntity<List<Transacao>>
-	 * consultarExtrato(@RequestParam String cpf) { List<Transacao> extrato =
-	 * contaService.consultarExtrato(cpf); return ResponseEntity.ok(extrato); }
-	 */
 
-	// Verificado
 	@PostMapping("/efetuarPIX")
 	public ResponseEntity<String> efetuarPIX(@RequestBody TransferenciaDTO transferenciaDTO) {
 		try {
@@ -108,7 +98,6 @@ public class ContaController {
 		}
 	}
 
-	// Endpoint para transferir para outras contas
 	@PostMapping("/transferirOutrasContas")
 	public ResponseEntity<String> transferirOutrasContas(@RequestBody TransferenciaDTO transferenciaDTO) {
 		boolean sucesso = contaService.realizarTransferenciaOutrasContas(transferenciaDTO.getValor(),
@@ -150,25 +139,20 @@ public class ContaController {
 		}
 	}
 
-	// Endpoint para exibir o saldo de uma conta
-	 @GetMapping("/exibirSaldoDetalhado")
-	    public ResponseEntity<?> exibirSaldoDetalhado(@RequestParam String cpf, @RequestParam String numConta) {
-	        try {
-	            // Chama o método do service para buscar a conta
-	            Conta conta = contaService.buscarContaPorClienteEConta(cpf, numConta);
+	@GetMapping("/exibirSaldoDetalhado")
+	public ResponseEntity<?> exibirSaldoDetalhado(@RequestParam String cpf, @RequestParam String numConta) {
+		try {
+			Conta conta = contaService.buscarContaPorClienteEConta(cpf, numConta);
 
-	            // Retorna os dados da conta em um DTO
-	            ContaResponseDTO contaResponseDTO = new ContaResponseDTO(
-	                    conta.getCliente().getNome(),
-	                    conta.getCliente().getCpf(),
-	                    conta
-	            );
+			// Retorna os dados da conta em um DTO
+			ContaResponseDTO contaResponseDTO = new ContaResponseDTO(conta.getCliente().getNome(),
+					conta.getCliente().getCpf(), conta);
 
-	            return ResponseEntity.ok(contaResponseDTO);
+			return ResponseEntity.ok(contaResponseDTO);
 
-	        } catch (IllegalArgumentException e) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-	        }
-	    }
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+		}
+	}
 
 }

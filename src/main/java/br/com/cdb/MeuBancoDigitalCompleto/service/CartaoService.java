@@ -25,6 +25,9 @@ public class CartaoService {
 
 	@Autowired
 	private CartaoRepository cartaoRepository;
+	
+	@Autowired
+	private ContaRepository contaRepository;
 
 	public void salvarCartao(Cartao cartao, boolean isAtualizar) throws Exception {
 		if (cartao == null || cartao.getNumCartao() == null) {
@@ -194,6 +197,7 @@ public class CartaoService {
 		}
 	}
 
+
 	public String gerarNumeroCartao(TipoCartao tipoCartao) {
 
 		String numeroParcial = gerarNumeroAleatorio(15);
@@ -273,30 +277,46 @@ public class CartaoService {
 	}
 
 	public boolean realizarPagamentoFatura(String numCartao, double valorPagamento) throws Exception {
-		Cartao cartao = cartaoRepository.findByNumCartao(numCartao);
+	    Cartao cartao = cartaoRepository.findByNumCartao(numCartao);
 
-		if (cartao == null || !(cartao instanceof CartaoCredito)) {
-			throw new RuntimeException("Cartão de crédito não encontrado ou tipo de cartão inválido.");
-		}
-		if (!cartao.isStatus()) {
-			throw new IllegalArgumentException("Status do Cartão Desativado");
-		}
+	    if (cartao == null || !(cartao instanceof CartaoCredito)) {
+	        throw new RuntimeException("Cartão de crédito não encontrado ou tipo de cartão inválido.");
+	    }
 
-		CartaoCredito cartaoCredito = (CartaoCredito) cartao;
+	    if (!cartao.isStatus()) {
+	        throw new IllegalArgumentException("Status do Cartão Desativado");
+	    }
 
-		if (valorPagamento <= 0 || valorPagamento > cartaoCredito.getSaldoMes()) {
-			throw new RuntimeException("Valor do pagamento inválido.");
-		}
+	    CartaoCredito cartaoCredito = (CartaoCredito) cartao;
+	    Conta conta = cartaoCredito.getConta();
 
-		boolean pagamentoEfetuado = cartaoCredito.pagarFatura(valorPagamento);
+	    if (conta == null) {
+	        throw new RuntimeException("Conta associada ao cartão não encontrada.");
+	    }
 
-		if (!pagamentoEfetuado) {
-			throw new RuntimeException("Não foi possível realizar o pagamento da fatura.");
-		}
+	    if (valorPagamento <= 0 || valorPagamento > cartaoCredito.getSaldoMes()) {
+	        throw new RuntimeException("Valor do pagamento inválido.");
+	    }
 
-		salvarCartao(cartaoCredito, true);
+	    if (conta.getSaldo() < valorPagamento) {
+	        throw new RuntimeException("Saldo insuficiente na conta para pagar a fatura.");
+	    }
 
-		return true;
+	    // Debita da conta corrente
+	    conta.setSaldo(conta.getSaldo() - valorPagamento);
+
+	    // Realiza o pagamento da fatura no cartão
+	    boolean pagamentoEfetuado = cartaoCredito.pagarFatura(valorPagamento);
+
+	    if (!pagamentoEfetuado) {
+	        throw new RuntimeException("Não foi possível realizar o pagamento da fatura.");
+	    }
+
+	    // Salva alterações no cartão e conta
+	    salvarCartao(cartaoCredito, true);
+	    contaRepository.save(conta);
+
+	    return true;
 	}
 
 	public Cartao buscarCartaoPorCliente(String numCartao) {
@@ -326,7 +346,7 @@ public class CartaoService {
 
 	        CartaoCredito cartaoCredito = (CartaoCredito) cartao;
 
-	        return cartaoCredito.getPagamento();
+	        return cartaoCredito.getSaldoMes();
 	    } else {
 
 	        throw new IllegalArgumentException("Cartão não é de crédito");

@@ -13,13 +13,13 @@
 //
 //@Configuration
 //public class SecurityConfig {
-//	
+//
 //	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 //        http
 //            .authorizeHttpRequests(authorize -> authorize
 //                .requestMatchers("/admin/**").hasRole("ADMIN")
 //                .requestMatchers("/user/**").hasRole("USER")
-//                //.antMatchers("/conta/**", "/cliente/**").permitAll()
+//                .requestMatchers("/conta/**", "/cliente/**", "/menuprincipal/**").permitAll()
 //                .anyRequest().authenticated()
 //            )
 //            .formLogin(form -> form

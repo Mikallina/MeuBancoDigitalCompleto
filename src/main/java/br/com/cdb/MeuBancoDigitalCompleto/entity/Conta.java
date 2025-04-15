@@ -1,12 +1,9 @@
 package br.com.cdb.MeuBancoDigitalCompleto.entity;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import br.com.cdb.MeuBancoDigitalCompleto.enuns.TipoConta;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

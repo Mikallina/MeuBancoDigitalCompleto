@@ -1,6 +1,5 @@
 package br.com.cdb.MeuBancoDigitalCompleto.dto;
 
-import br.com.cdb.MeuBancoDigitalCompleto.entity.Conta;
 
 public class TransferenciaDTO {
     private Long id;
@@ -67,10 +66,6 @@ public class TransferenciaDTO {
 	public void setValor(double valor) {
 		this.valor = valor;
 	}
-
-
-
-
 
 
 }

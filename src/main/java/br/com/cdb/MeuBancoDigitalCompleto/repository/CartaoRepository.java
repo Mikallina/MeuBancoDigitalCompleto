@@ -10,7 +10,7 @@ import br.com.cdb.MeuBancoDigitalCompleto.entity.Conta;
 
 @Repository
 public interface CartaoRepository extends JpaRepository<Cartao, Long> {
-    List<Cartao> findByConta(Conta conta); // Aqui a busca será feita pela entidade Conta
+    List<Cartao> findByConta(Conta conta);
 
 	Cartao findByNumCartao(String numCartao);
 }

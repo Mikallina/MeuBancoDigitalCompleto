@@ -3,15 +3,11 @@ package br.com.cdb.MeuBancoDigitalCompleto.service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
 import java.util.regex.Pattern;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import br.com.cdb.MeuBancoDigitalCompleto.entity.Cliente;
 import br.com.cdb.MeuBancoDigitalCompleto.entity.Endereco;
-import br.com.cdb.MeuBancoDigitalCompleto.enuns.Categoria;
 import br.com.cdb.MeuBancoDigitalCompleto.repository.ClienteRepository;
 
 @Service
@@ -62,10 +58,9 @@ public class ClienteService {
 	}
 
 	public boolean validarCpf(String cpf, boolean isAtualizar, Long clienteId) {
-	    // Validar CPF antes de consultar o banco de dados
 	    ValidaCpf validaCpf = new ValidaCpf();
 	    if (!validaCpf.isCPF(cpf)) {
-	        return false; // CPF inválido
+	        return false; 
 	    }
 
 	    if (isAtualizar) {

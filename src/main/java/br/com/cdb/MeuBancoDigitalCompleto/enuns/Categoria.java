@@ -1,7 +1,5 @@
 package br.com.cdb.MeuBancoDigitalCompleto.enuns;
 
-import jakarta.persistence.Entity;
-
 public enum Categoria {
 
 	COMUM("Comum"),

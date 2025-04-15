@@ -18,9 +18,9 @@ public class ContaService {
 
 	@Autowired
 	private ContaRepository contaRepository;
-	
-    @Autowired
-    private ClienteRepository clienteRepository;
+
+	@Autowired
+	private ClienteRepository clienteRepository;
 	double taxaRendimento = 0;
 
 	public void salvarConta(Cliente cliente, Conta conta, TipoConta tipoConta) {
@@ -219,10 +219,9 @@ public class ContaService {
 	public boolean realizarTransferencia(double valor, String numContaOrigem, String numContaDestino,
 			boolean transferenciaPoupança, boolean transferenciaPix, boolean transferenciaOutrasContas) {
 
-
 		Conta contaOrigem = contaRepository.findByNumConta(numContaOrigem);
 		Conta contaDestino = contaRepository.findByNumConta(numContaDestino);
-		
+
 		if (contaOrigem == null) {
 			throw new IllegalArgumentException("Conta de origem não encontrada.");
 		}
@@ -249,7 +248,7 @@ public class ContaService {
 
 		contaRepository.save(contaOrigem);
 
-// Se houve alguma modificação na conta de destino, salvar também
+		// 	Se houve alguma modificação na conta de destino, salvar também
 		if (contaDestino != null && (transferenciaPoupança || transferenciaOutrasContas)) {
 			contaRepository.save(contaDestino);
 		}
@@ -260,23 +259,21 @@ public class ContaService {
 	public Conta buscarContas(String conta) {
 		return contaRepository.findByNumConta(conta);
 	}
-	
+
 	public Conta buscarContaPorClienteEConta(String cpf, String numConta) {
-        // Busca o cliente com o CPF fornecido
-        Cliente cliente = clienteRepository.findByCpf(cpf);
+		// Busca o cliente com o CPF fornecido
+		Cliente cliente = clienteRepository.findByCpf(cpf);
 
-        if (cliente == null) {
-            throw new IllegalArgumentException("Cliente não encontrado.");
-        }
+		if (cliente == null) {
+			throw new IllegalArgumentException("Cliente não encontrado.");
+		}
 
-        // Busca as contas do cliente
-        List<Conta> contas = contaRepository.findByCliente(cliente);
+		// Busca as contas do cliente
+		List<Conta> contas = contaRepository.findByCliente(cliente);
 
-        // Filtra a conta com base no número da conta
-        return contas.stream()
-                     .filter(c -> c.getNumConta().equals(numConta))
-                     .findFirst()
-                     .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada."));
-    }
+		// Filtra a conta com base no número da conta
+		return contas.stream().filter(c -> c.getNumConta().equals(numConta)).findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("Conta não encontrada."));
+	}
 
 }

@@ -9,18 +9,15 @@ import br.com.cdb.MeuBancoDigitalCompleto.repository.LoginRepository;
 @Service
 public class LoginService {
 	@Autowired
-    private LoginRepository loginRepository;
+	private LoginRepository loginRepository;
 
+	public boolean autenticar(String email, String senha) {
+		Login login = loginRepository.findByEmail(email);
+		if (login == null) {
+			return false;
+		}
 
-
-    public boolean autenticar(String email, String senha) {
-        Login login = loginRepository.findByEmail(email);
-        if (login == null) {
-            return false; 
-        }
-
-       
-        return true;
-    }
+		return true;
+	}
 
 }

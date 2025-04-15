@@ -14,10 +14,8 @@ import br.com.cdb.MeuBancoDigitalCompleto.enuns.TipoConta;
 @Repository
 public interface ContaRepository extends JpaRepository<Conta, Long> {
 	  Conta findByNumConta(String numContaDestino);
-	  Optional<Conta> findByClienteAndTipoConta(Cliente cliente, TipoConta tipoConta);
-	  
+	  Optional<Conta> findByClienteAndTipoConta(Cliente cliente, TipoConta tipoConta);  
 	  List<Conta> findByCliente_IdCliente(Long clienteId);
-	 // Conta findByCliente(Cliente cliente);
 	  List<Conta> findByCliente(Cliente cliente);
 	  
 }

@@ -1,9 +1,7 @@
 package br.com.cdb.MeuBancoDigitalCompleto.entity;
 
 import br.com.cdb.MeuBancoDigitalCompleto.enuns.TipoCartao;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity

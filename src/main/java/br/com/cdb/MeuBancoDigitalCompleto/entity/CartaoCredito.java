@@ -2,11 +2,8 @@ package br.com.cdb.MeuBancoDigitalCompleto.entity;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-
-import br.com.cdb.MeuBancoDigitalCompleto.enuns.Categoria;
 import br.com.cdb.MeuBancoDigitalCompleto.enuns.TipoCartao;
 import jakarta.persistence.Entity;
-
 
 @Entity
 public class CartaoCredito extends Cartao {
@@ -21,39 +18,18 @@ public class CartaoCredito extends Cartao {
 
 	private double limiteCredito;
 
-	public String getDiaVencimento() {
-		return diaVencimento;
+
+	
+	public CartaoCredito() {
 	}
-	
-	
-    public boolean pagarFatura(double valorPagamento) {
-        if (valorPagamento <= 0 || valorPagamento > this.saldoMes) {
-            return false; 
-        }
 
-        this.saldoMes -= valorPagamento;  
-        this.saldoCredito += valorPagamento;
-        
-        return true;
-    }
-
-	public void setDiaVencimento(String diaVencimento) {
+	public CartaoCredito(Conta conta, int senha, String numCartao, TipoCartao tipoCartao, double limiteCredito,
+			String diaVencimento, LocalDate dataVencimento) {
+		super(numCartao, conta, tipoCartao, senha, true);
+		this.limiteCredito = limiteCredito;
+		this.tipoCartao = tipoCartao;
 		this.diaVencimento = diaVencimento;
-	}
-
-	
-	public CartaoCredito() {}
-
-	public CartaoCredito(double taxa, LocalDate dataVencimento, LocalDate dataCompra, double pagamento,
-			double saldoCredito, double saldoMes, TipoCartao tipoCartao, String diaVencimento) {
-		super();
-		this.taxa = taxa;
 		this.dataVencimento = dataVencimento;
-		this.dataCompra = dataCompra;
-		this.pagamento = pagamento;
-		this.saldoCredito = saldoCredito;
-		this.saldoMes = saldoMes;
-		this.diaVencimento = diaVencimento;
 
 	}
 
@@ -62,16 +38,9 @@ public class CartaoCredito extends Cartao {
 
 	}
 
-	public CartaoCredito(Conta conta, int senha, String numCartao,TipoCartao tipoCartao, double limiteCredito, String diaVencimento, LocalDate dataVencimento) {
-		super(numCartao, conta, tipoCartao, senha,true);
-		this.limiteCredito = limiteCredito;
-		this.tipoCartao = tipoCartao;
+	public void setDiaVencimento(String diaVencimento) {
 		this.diaVencimento = diaVencimento;
-		this.dataVencimento = dataVencimento;
-	
 	}
-	
-	
 
 	public double getLimiteCredito() {
 		return limiteCredito;
@@ -125,6 +94,15 @@ public class CartaoCredito extends Cartao {
 		this.saldoMes = saldoMes;
 	}
 
+	public void setLimiteCredito(double limiteCredito) {
+		this.limiteCredito = limiteCredito;
+	}
+	
+	public String getDiaVencimento() {
+		return diaVencimento;
+	}
+
+
 	public boolean novoCiclo() {
 		long diaUltimaCompra = ChronoUnit.DAYS.between(dataVencimento, dataCompra);
 		return diaUltimaCompra >= 30;
@@ -150,26 +128,17 @@ public class CartaoCredito extends Cartao {
 			System.out.println("Limite de Crédito excedido");
 		}
 	}
+	
+	public boolean pagarFatura(double valorPagamento) {
+		if (valorPagamento <= 0 || valorPagamento > this.saldoMes) {
+			return false;
+		}
 
-	public void setLimiteCredito(double limiteCredito) {
-		this.limiteCredito = limiteCredito;
+		this.saldoMes -= valorPagamento;
+		this.saldoCredito += valorPagamento;
+
+		return true;
 	}
-
-
-	public CartaoCredito(double taxa, LocalDate dataVencimento, LocalDate dataCompra, double pagamento,
-			double saldoCredito, double saldoMes, String diaVencimento, double limiteCredito) {
-		super();
-		this.taxa = taxa;
-		this.dataVencimento = dataVencimento;
-		this.dataCompra = dataCompra;
-		this.pagamento = pagamento;
-		this.saldoCredito = saldoCredito;
-		this.saldoMes = saldoMes;
-		this.diaVencimento = diaVencimento;
-		this.limiteCredito = limiteCredito;
-	}
-
-
 
 
 }

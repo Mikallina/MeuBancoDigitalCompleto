@@ -132,26 +132,26 @@ body {
 
         // Função para listar todos os clientes cadastrados
       function listarClientes() {
-    fetch('http://localhost:8080/cliente/listAllCliente') 
-        .then(response => response.json())
-        .then(data => {
-            var clientesList = document.getElementById('clientesList');
-            clientesList.innerHTML = '';
-            
-            data.forEach(cliente => {
-                var row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${cliente.nome}</td>
-                    <td>${cliente.cpf}</td>
-                    <td>${cliente.dataNascimento}</td>
-                    <td>
-                        <button class="btn btn-warning" onclick="editarCliente(${cliente.idCliente})">Editar</button>
-                        <button class="btn btn-danger" onclick="deletarCliente(${cliente.idCliente})">Deletar</button>
-                    </td>
-                `;
-                clientesList.appendChild(row);
-            });
-        })
+	    fetch('http://localhost:8080/cliente/listAllCliente') 
+	        .then(response => response.json())
+	        .then(data => {
+	            var clientesList = document.getElementById('clientesList');
+	            clientesList.innerHTML = '';
+	            
+	            data.forEach(cliente => {
+	                var row = document.createElement('tr');
+	                row.innerHTML = `
+	                    <td>${cliente.nome}</td>
+	                    <td>${cliente.cpf}</td>
+	                    <td>${cliente.dataNascimento}</td>
+	                    <td>
+	                        <button class="btn btn-warning" onclick="editarCliente(${cliente.idCliente})">Editar</button>
+	                        <button class="btn btn-danger" onclick="deletarCliente(${cliente.idCliente})">Deletar</button>
+	                    </td>
+	                `;
+	                clientesList.appendChild(row);
+	            });
+	        })
         .catch(error => {
             console.error("Erro ao listar clientes:", error);
             alert("Erro ao listar clientes.");
